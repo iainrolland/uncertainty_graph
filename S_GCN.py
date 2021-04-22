@@ -17,7 +17,7 @@ learning_rate = 1e-2
 l2_loss_coefficient = 5e-4
 gpu_list = []
 seed = 0
-epochs = 15
+epochs = 200
 patience = 10
 data = "houston"
 
@@ -47,8 +47,7 @@ model = GCN(n_labels=dataset.n_labels, n_input_channels=dataset.n_node_features,
             output_activation=lambda foo: tf.exp(foo) + 1, l2_reg=l2_loss_coefficient)
 model.compile(
     optimizer=Adam(learning_rate),
-    loss=losses.SquareErrorDirichlet(),
-    weighted_metrics=["acc", losses.SquareErrorDirichlet()],
+    weighted_metrics=["acc"]
 )
 
 # Train model
