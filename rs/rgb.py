@@ -2,9 +2,8 @@ import rasterio
 from rasterio.merge import merge
 from rasterio.io import MemoryFile
 from glob import glob
-from tif_manip import resample_tif
 import rs.ground_truth
-from .utils import get_training_array
+from .utils import get_training_array, resample_tif
 
 
 def mosaic(directory):

@@ -1,7 +1,12 @@
 import numpy as np
 import os
+from datasets import HoustonDataset, Karate
 from tqdm import tqdm
 import tensorflow as tf
+from models import GCN, S_GCN
+
+supported_models = {"GCN": GCN, "S_GCN": S_GCN}
+supported_datasets = {"houston": HoustonDataset, "karate": Karate}
 
 
 def dissonance_uncertainty(alpha):
@@ -42,22 +47,23 @@ def mask_to_weights(mask):
     return mask.astype(np.float32) * len(mask) / np.count_nonzero(mask)
 
 
-def class_weights(y, mask):
-    samples = y[mask].sum(axis=0)
-    samples = np.true_divide(1, samples, out=0. * samples, where=samples != 0)
-    samples = len(samples) * samples / samples.sum()
-    return {i: weight for i, weight in enumerate(samples)}
+def weight_by_class(y, weights):
+    samples = y[weights != 0].sum(axis=0)
+    samples = np.true_divide(len(weights), samples * len(samples[samples != 0]), out=0. * samples, where=samples != 0)
+    return (y * samples).max(axis=-1)
 
 
 def gpu_initialise(gpu_list):
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    if gpus:
+    if len(gpu_list) > 0:
+        gpus = tf.config.experimental.list_physical_devices('GPU')
         try:
-            for gpu in list(np.array(gpus)[gpu_list]):
+            for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
             tf.config.experimental.set_visible_devices(list(np.array(gpus)[gpu_list]), 'GPU')
-            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPU")
         except RuntimeError as e:
             # Visible devices must be set before GPUs have been initialized
             print(e)
+    else:
+        tf.config.experimental.set_visible_devices([], 'GPU')
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    print(len(logical_gpus), "Logical GPU")
