@@ -1,5 +1,5 @@
 from training import train
-from models import S_GCN
+from models import GCN
 
 data = "karate"
 learning_rate = 1e-2
@@ -9,4 +9,4 @@ patience = 10
 seed = 0
 gpu_list = []
 
-train(S_GCN, data, learning_rate, l2_loss_coefficient, epochs, patience, seed, gpu_list)
+train(GCN, data, learning_rate, l2_loss_coefficient, epochs, patience, seed, gpu_list)
