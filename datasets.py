@@ -7,7 +7,7 @@ from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import OneHotEncoder
 
 
-class HoustonDataset(Dataset):
+class HoustonDataset_k2(Dataset):
     def __init__(self, **kwargs):
         self.mask_tr = self.mask_va = self.mask_te = None
         super().__init__(**kwargs)
@@ -28,14 +28,19 @@ class HoustonDataset(Dataset):
 
     def read(self):
         data = np.load(os.path.join(self.path, f'graph.npz'), allow_pickle=True)
-        x, a, y = data['x'], data['a'].tolist(), data['y'].astype(np.uint8)
+        x, a, y = data['x'].astype(np.float32), data['a'].tolist(), data['y'].astype(np.uint8)
 
         # Train/valid/test masks
-        self.mask_tr = np.array([True if 1436 <= n % 4768 <= 1800 else False for n in range(len(y))])
+        self.mask_tr = np.array([True if 1436 <= n % 4768 <= 2000 else False for n in range(len(y))])
         self.mask_va = np.array([True if n % 4768 < 1436 else False for n in range(len(y))])
-        self.mask_te = np.array([True if n % 4768 > 1800 else False for n in range(len(y))])
-        self.mask_tr[np.argwhere(y[:, 0] == 1).flatten()] = False  # remove 'Unclassified' from training
-        self.mask_va[np.argwhere(y[:, 0] == 1).flatten()] = False  # and validation (don't increase loss)
+        self.mask_te = np.array([True if n % 4768 > 2000 else False for n in range(len(y))])
+        # Remove 'Unclassified':
+        # - from training so we don't learn to predict it as an output class
+        # - from validation so the classification of unlabelled nodes doesn't contribute to val_loss
+        # - from test because the classification of unlabelled nodes shouldn't contribute to test_acc
+        self.mask_tr[np.argwhere(y[:, 0] == 1).flatten()] = False
+        self.mask_va[np.argwhere(y[:, 0] == 1).flatten()] = False
+        self.mask_te[np.argwhere(y[:, 0] == 1).flatten()] = False
 
         return [Graph(x=x, a=a, y=y)]
 

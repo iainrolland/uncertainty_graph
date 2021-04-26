@@ -6,7 +6,13 @@ from spektral.layers import GCNConv
 from losses import SquareErrorDirichlet, TeacherAndSquareErrorDirichlet
 
 
-class S_GCN:
+class GCN:
+    transforms = [LayerPreprocess(GCNConv), AdjToSpTensor()]
+    loss = tf.losses.CategoricalCrossentropy()
+    output_activation = "softmax"
+
+
+class S_BGCN:
     transforms = [LayerPreprocess(GCNConv), AdjToSpTensor()]
     loss = SquareErrorDirichlet()
 
@@ -17,19 +23,13 @@ class S_GCN:
         return tf.exp(x) + 1
 
 
-class GCN:
-    transforms = [LayerPreprocess(GCNConv), AdjToSpTensor()]
-    loss = tf.losses.CategoricalCrossentropy()
-    output_activation = "softmax"
-
-
-class S_GCN_T:
+class S_BGCN_T:
     transforms = [LayerPreprocess(GCNConv), AdjToSpTensor()]
     loss = None
 
     def __init__(self, gcn_prob_path):
-        self.loss = TeacherAndSquareErrorDirichlet(np.load(gcn_prob_path))
-        self.__name__ = S_GCN_T.__name__
+        self.loss = TeacherAndSquareErrorDirichlet(np.load(gcn_prob_path).astype(np.float16))
+        self.__name__ = S_BGCN_T.__name__
 
     @staticmethod
     def output_activation(x):
