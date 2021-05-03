@@ -1,0 +1,12 @@
+{
+    "model": "S-BGCN",
+    "gpu_list": [],
+    "seed": 0,
+    "ood_classes": [],
+    "data": "HoustonDatasetMini",
+    "learning_rate": 0.01,
+    "l2_loss_coefficient": 0.0005,
+    "epochs": 400,
+    "patience": 45,
+    "directory": "models/S-BGCN_HoustonDatasetMini_2021_04_30_1"
+}
