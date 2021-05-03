@@ -1,7 +1,8 @@
 import numpy as np
 import os
-from tqdm import tqdm
 import tensorflow as tf
+from scipy.ndimage import label
+import logging
 
 
 def get_unique_path(directory, name, number=0, exists_function=os.path.isfile):
@@ -43,3 +44,57 @@ def gpu_initialise(gpu_list):
         tf.config.experimental.set_visible_devices([], 'GPU')
     logical_gpus = tf.config.experimental.list_logical_devices('GPU')
     print(len(logical_gpus), "Logical GPU")
+
+
+def set_seeds(seed):
+    tf.random.set_seed(seed)
+    np.random.seed(seed)
+
+
+def masks_from_gt(gt, train_ratio=0.4, val_ratio=0.3):
+    mask_tr, mask_va, mask_te = [np.zeros_like(gt).astype("bool") for _ in range(3)]
+
+    for class_id in range(1, gt.max() + 1):  # for each output class (other than "Unclassified")
+        labels, numb_objects = label(gt == class_id)  # label each contiguous block with a number from 1,...,N
+        objects = np.random.choice(np.arange(1, numb_objects + 1), numb_objects, replace=False)
+        numb_per_split = np.ceil(
+            np.array([numb_objects * train_ratio, numb_objects * (train_ratio + val_ratio), numb_objects])).astype(int)
+        training_objects = objects[:numb_per_split[0]]
+        val_objects = objects[numb_per_split[0]:numb_per_split[1]]
+        test_objects = objects[numb_per_split[1]:]
+
+        mask_tr = np.bitwise_or(mask_tr, np.isin(labels, training_objects))
+        mask_va = np.bitwise_or(mask_va, np.isin(labels, val_objects))
+        mask_te = np.bitwise_or(mask_te, np.isin(labels, test_objects))
+    return mask_tr.flatten(), mask_va.flatten(), mask_te.flatten()
+
+
+def set_logger(log_path):
+    """Sets the logger to log info in terminal and file `log_path`.
+    In general, it is useful to have a logger so that every output to the terminal is saved
+    in a permanent file. Here we save it to `model_dir/train.log`.
+    Example:
+    ```
+    logging.info("Starting training...")
+    ```
+    Args:
+        log_path: (string) where to log
+    """
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    if not logger.handlers:
+        # Logging to a file
+        file_handler = logging.FileHandler(log_path)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s: %(message)s'))
+        logger.addHandler(file_handler)
+
+        # Logging to console
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(logging.Formatter('%(message)s'))
+        logger.addHandler(stream_handler)
+
+
+def log_error(error_type, message):
+    logging.critical(message)
+    return error_type(message)

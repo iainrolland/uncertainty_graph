@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import numpy
 import numpy as np
 import rasterio
 from datasets import HoustonDataset_k2
@@ -50,13 +51,13 @@ def set_each_ax_y_label(label_list, ax_list):
 
 
 def set_rcParams():
-    # plt.rcParams["figure.dpi"] = 300
+    plt.rcParams["figure.dpi"] = 300
     plt.rcParams["font.family"] = "Times New Roman"
     plt.rcParams["font.family"] = "Times New Roman"
     # plt.rcParams['font.size'] = 3
 
 
-def add_colorbar(fig, img, one_ax, x_shift=0.1, height_scale=0.95):
+def add_colorbar(fig, img, one_ax, x_shift=0.2, height_scale=0.95):
     bounds = one_ax.get_position().bounds
     bounds = (bounds[0] + x_shift, (3 - height_scale) * bounds[1] / 2, bounds[2], bounds[3] * height_scale,)
     cbar = fig.add_axes(bounds)
@@ -91,3 +92,17 @@ def shade_one_axes_with_splits(ax):
 
 def unflatten_array(array, output_shape=load_gt().shape):
     return array.reshape(output_shape + (-1,))
+
+
+def classes_array_to_colormapped_array(classes_array):
+    colormap = read_colormap()
+    color_mapped_array = np.zeros(classes_array.shape + (4,), dtype=np.uint8)
+    for class_id in range(np.max(classes_array) + 1):
+        color_mapped_array[classes_array == class_id] = colormap[class_id]
+    return color_mapped_array
+
+
+def read_colormap(path="houston_data/colormap.clr"):
+    with open(path, "r") as f:
+        colormap = np.array([[int(value) for value in row.split(" ")[1:]] for row in f.read().split("\n")])[:, :4]
+    return colormap

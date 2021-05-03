@@ -27,8 +27,8 @@ class S_BGCN_T:
     transforms = [LayerPreprocess(GCNConv), AdjToSpTensor()]
     loss = None
 
-    def __init__(self, gcn_prob_path):
-        self.loss = TeacherAndSquareErrorDirichlet(np.load(gcn_prob_path).astype(np.float16))
+    def __init__(self, gcn_prob_path, teacher_coefficient):
+        self.loss = TeacherAndSquareErrorDirichlet(np.load(gcn_prob_path).astype(np.float32), teacher_coefficient)
         self.__name__ = S_BGCN_T.__name__
 
     @staticmethod

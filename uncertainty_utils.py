@@ -1,68 +1,213 @@
 import numpy as np
 from tqdm import tqdm
-from utils import mask_to_weights
+from utils import mask_to_weights, log_error
 from sklearn.metrics import roc_auc_score, average_precision_score
+from scipy.special import xlogy
+import tensorflow as tf
+
+
+def alpha_to_prob(alpha):
+    if isinstance(alpha, tf.Tensor):
+        return tf.divide(alpha, get_strength(alpha, keepdims=True))
+    else:
+        return alpha / get_strength(alpha, keepdims=True)
+
+
+def get_strength(alpha, keepdims=False):
+    if isinstance(alpha, tf.Tensor):
+        return tf.reduce_sum(alpha, axis=-1, keepdims=keepdims)
+    else:
+        return alpha.sum(axis=-1, keepdims=keepdims)
+
+
+def get_belief(alpha):
+    return (alpha - 1) / get_strength(alpha, keepdims=True)
+
+
+def vacuity_uncertainty(alpha):
+    return alpha.shape[-1] / get_strength(alpha, keepdims=False)
 
 
 def dissonance_uncertainty(alpha):
-    strength = np.sum(alpha, axis=1, keepdims=True)
-    belief = (alpha - 1) / strength
-    dis_un = np.zeros_like(strength, dtype="float64")
+    if isinstance(alpha, tf.Tensor):
+        alpha = np.array(alpha)
+    belief = get_belief(alpha)
+    dis_un = np.zeros(alpha.shape[0])
 
-    for i in tqdm(range(belief.shape[0])):
-        b = belief[i]
-        b[b == 0] += 1e-15  # to prevent divide by any divide by zero errors
-        bal = 1 - np.abs(b[:, None] - b[None, :]) / (b[None, :] + b[:, None]) - np.eye(len(b))
+    for i in tqdm(range(alpha.shape[0])):  # for each node
+        b = belief[i]  # belief vector
+        numerator, denominator = np.abs(b[:, None] - b[None, :]), b[None, :] + b[:, None]
+        bal = 1 - np.true_divide(numerator, denominator, where=denominator != 0,
+                                 out=np.zeros_like(denominator)) - np.eye(len(b))
         coefficients = b[:, None] * b[None, :] - np.diag(b ** 2)
         denominator = np.sum(b[None, :] * np.ones(belief.shape[1]) - np.diag(b), axis=-1, keepdims=True)
-        dis_un[i] = (coefficients * bal / denominator).sum()
+        dis_un[i] = (coefficients * np.true_divide(bal, denominator, where=denominator != 0,
+                                                   out=np.zeros_like(bal))).sum()
 
     return dis_un
 
 
-def vacuity_uncertainty(alpha):
-    return alpha.shape[-1] / alpha.sum(axis=-1)
+def entropy(prob):
+    class_un = -xlogy(prob, prob) / np.log(prob.shape[1])
+    if isinstance(class_un, tf.Tensor):
+        total_un = tf.reduce_sum(class_un, axis=1, keepdims=True)
+    else:
+        total_un = class_un.sum(axis=1, keepdims=True)
+    return total_un, class_un
 
 
-def misclassification(alpha, vacuity, dissonance, dataset, n_splits=10):
-    mask_te = dataset.mask_te
-    # Consider nodes in the Unclassified class (id 0) as neither in nor out of distribution i.e. just remove them
-    mask_te[np.argwhere((dataset[0].y.argmax(axis=-1) == 0) & mask_te).flatten()] = False
-    mask_te = mask_to_weights(dataset.mask_te)
-    uncertainties = {"dissonance": {"values": dissonance, "auroc": np.zeros(n_splits), "aupr": np.zeros(n_splits)},
-                     "vacuity": {"values": vacuity, "auroc": np.zeros(n_splits), "aupr": np.zeros(n_splits)}}
+def entropy_bayesian(prob_samples):
+    prob = np.mean(prob_samples, axis=0)  # take the average probability from MC-Dropouts and compute its entropy
+    return entropy(prob)
+
+
+def aleatoric_bayesian(prob_samples):
+    al_total, al_class = [], []
+    for prob in prob_samples:
+        total_en, class_en = entropy(prob)  # take the entropy of each MC-Dropout output and compute the mean entropy
+        al_total.append(total_en), al_class.append(class_en)
+    return np.mean(al_total, axis=0), np.mean(al_class, axis=0)
+
+
+def get_dropout_uncertainties(prob_samples):
+    entropy_un, class_entropy_un = entropy_bayesian(prob_samples)
+    aleatoric_un, class_aleatoric_un = aleatoric_bayesian(prob_samples)
+    class_epistemic_un = class_entropy_un - class_aleatoric_un
+    epistemic_un = np.sum(class_epistemic_un, axis=1, keepdims=True)
+    return {"entropy": entropy_un, "aleatoric": aleatoric_un, "epistemic": epistemic_un}
+
+
+class DropoutUncertainties:
+    def __init__(self, num_samples):
+        self.num_samples = num_samples
+        self.samples_seen = 0
+        self.mean_prob = None
+        self.mean_total_entropy = None
+        self.mean_class_entropy = None
+
+    def update(self, prob):
+        if self.samples_seen >= self.num_samples:
+            message = "DropoutUncertainties object was instantiated expecting {} samples".format(self.num_samples)
+            message += " but has been called on {} samples.".format(self.samples_seen + 1)
+            raise log_error(AssertionError, message)
+        self._mean_prob(prob)
+        self._mean_entropy(prob)
+
+        self.samples_seen += 1
+
+    def _mean_prob(self, prob):
+        if self.samples_seen == 0:
+            self.mean_prob = prob / self.num_samples
+        else:
+            self.mean_prob += prob / self.num_samples
+
+    def _mean_entropy(self, prob):
+        total_entropy, class_entropy = entropy(prob)
+        if self.samples_seen == 0:
+            self.mean_total_entropy = total_entropy / self.num_samples
+            self.mean_class_entropy = class_entropy / self.num_samples
+        else:
+            self.mean_total_entropy += total_entropy / self.num_samples
+            self.mean_class_entropy += class_entropy / self.num_samples
+
+    def get_uncertainties(self):
+        if self.samples_seen != self.num_samples:
+            message = "DropoutUncertainties object was instantiated expecting {} samples".format(self.num_samples)
+            message += " but has only been called on {} samples.".format(self.samples_seen)
+            raise log_error(AssertionError, message)
+        total_entropy, class_entropy = entropy(self.mean_prob)
+        total_aleatoric, class_aleatoric = self.mean_total_entropy, self.mean_class_entropy
+        class_epistemic_un = class_entropy - class_aleatoric
+        epistemic_un = np.sum(class_epistemic_un, axis=1, keepdims=True)
+
+        return {"entropy": total_entropy, "aleatoric": total_aleatoric, "epistemic": epistemic_un}
+
+
+class SubjectiveBayesianUncertainties(DropoutUncertainties):
+    def __init__(self, num_samples):
+        super().__init__(num_samples)
+        self.mean_alpha = None
+
+    def _mean_alpha(self, alpha):
+        if self.samples_seen == 0:
+            self.mean_alpha = alpha / self.num_samples
+        else:
+            self.mean_alpha += alpha / self.num_samples
+
+    def update(self, alpha):
+        self._mean_alpha(alpha)
+        super().update(alpha_to_prob(alpha))
+
+    def get_uncertainties(self):
+        uncertainties = super().get_uncertainties()
+        vacuity = vacuity_uncertainty(self.mean_alpha)
+        dissonance = dissonance_uncertainty(self.mean_alpha)
+        uncertainties.update({"vacuity": vacuity, "dissonance": dissonance})
+        return uncertainties
+
+
+def get_subjective_uncertainties(alpha):
+    total_entropy, class_entropy = entropy(alpha_to_prob(alpha))
+    return {"vacuity": vacuity_uncertainty(alpha), "dissonance": dissonance_uncertainty(alpha),
+            "entropy": total_entropy}
+
+
+def get_subjective_bayesian_uncertainties(alpha_samples):
+    prob_samples = [alpha_to_prob(alpha) for alpha in alpha_samples]
+    uncertainties = get_dropout_uncertainties(prob_samples)
+
+    alpha_mean = np.mean(alpha_samples, axis=0)
+    subjective_uncertainties = get_subjective_uncertainties(alpha_mean)
+    uncertainties.update(
+        {"vacuity": subjective_uncertainties["vacuity"], "dissonance": subjective_uncertainties["dissonance"]})
+
+    return uncertainties
+
+
+def misclassification(prob, uncertainties, y_true, test_mask, n_splits=10):
+    # Don't consider nodes in the Unclassified class (id 0)
+    test_mask[np.argwhere((y_true.argmax(axis=-1) == 0) & test_mask).flatten()] = False
+
+    uncertainties = {unc_name: {"values": unc_values, "auroc": np.zeros(n_splits), "aupr": np.zeros(n_splits)}
+                     for unc_name, unc_values in uncertainties.items()}
 
     for split_i in range(n_splits):
-        node_indices = np.random.choice(np.argwhere(mask_te).flatten(), 1000, replace=False)
-        pred_matches_label_bool = np.equal(alpha[node_indices].argmax(axis=-1),
-                                           dataset[0].y[node_indices].argmax(axis=-1))
+        # randomly select 1000 test nodes
+        node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
+        # true if prediction matches label
+        pred_matches_label_bool = np.equal(prob[node_indices].argmax(axis=-1),
+                                           y_true[node_indices].argmax(axis=-1))
         for unc in uncertainties:
             uncertainties[unc]["auroc"][split_i] = roc_auc_score(~pred_matches_label_bool,
                                                                  uncertainties[unc]["values"][node_indices])
             uncertainties[unc]["aupr"][split_i] = average_precision_score(~pred_matches_label_bool,
-                                                                          uncertainties[unc]["values"][node_indices])
+                                                                          uncertainties[unc]["values"][
+                                                                              node_indices])
 
-    return {uncertainty: {dict_key: unc_dict[dict_key].mean() for dict_key in unc_dict if dict_key != "values"} for
-            uncertainty, unc_dict in uncertainties.items()}
+    return {unc_name: {dict_key: unc_values[dict_key].mean() for dict_key in unc_values if dict_key != "values"} for
+            unc_name, unc_values in uncertainties.items()}
 
 
-def ood_detection(vacuity, dissonance, dataset, n_splits=10):
-    mask_te = dataset.mask_te
+def ood_detection(uncertainties, y_true, train_mask, test_mask, n_splits=10):
     # Consider nodes in the Unclassified class (id 0) as neither in nor out of distribution i.e. just remove them
-    mask_te[np.argwhere((dataset[0].y.argmax(axis=-1) == 0) & mask_te).flatten()] = False
-    mask_te = mask_to_weights(dataset.mask_te)
-    ood_classes = np.argwhere(dataset[0].y[dataset.mask_tr].sum(axis=0) == 0).flatten()[1:]
-    uncertainties = {"dissonance": {"values": dissonance, "auroc": np.zeros(n_splits), "aupr": np.zeros(n_splits)},
-                     "vacuity": {"values": vacuity, "auroc": np.zeros(n_splits), "aupr": np.zeros(n_splits)}}
+    test_mask[np.argwhere((y_true.argmax(axis=-1) == 0) & test_mask).flatten()] = False
+
+    train_classes = set(np.argwhere(y_true[train_mask].sum(axis=0) != 0).flatten())
+    test_classes = set(np.argwhere(y_true[test_mask].sum(axis=0) != 0).flatten())
+    ood_classes = test_classes.difference(train_classes)
+
+    uncertainties = {unc_name: {"values": unc_values, "auroc": np.zeros(n_splits), "aupr": np.zeros(n_splits)}
+                     for unc_name, unc_values in uncertainties.items()}
 
     for split_i in range(n_splits):
-        node_indices = np.random.choice(np.argwhere(mask_te).flatten(), 1000, replace=False)
-        is_ood_bool = np.isin(dataset[0].y[node_indices].argmax(axis=-1), ood_classes)
+        node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
+        # true if node from an OOD class
+        is_ood_bool = np.isin(y_true[node_indices].argmax(axis=-1), list(ood_classes))
         for unc in uncertainties:
             uncertainties[unc]["auroc"][split_i] = roc_auc_score(is_ood_bool,
                                                                  uncertainties[unc]["values"][node_indices])
             uncertainties[unc]["aupr"][split_i] = average_precision_score(is_ood_bool,
                                                                           uncertainties[unc]["values"][node_indices])
 
-    return {uncertainty: {dict_key: unc_dict[dict_key].mean() for dict_key in unc_dict if dict_key != "values"} for
-            uncertainty, unc_dict in uncertainties.items()}
+    return {unc_name: {dict_key: unc_values[dict_key].mean() for dict_key in unc_values if dict_key != "values"} for
+            unc_name, unc_values in uncertainties.items()}

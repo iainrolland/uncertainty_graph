@@ -2,7 +2,7 @@ import os
 
 from .utils import *
 from rs import rgb
-from .utils import unflatten_array
+from .utils import unflatten_array, read_colormap
 
 set_rcParams()
 
@@ -12,17 +12,12 @@ def load_alpha_vac_dis(directory):
     return [np.load(path) for path in paths]
 
 
-def read_colormap(path="houston_data/colormap.clr"):
-    with open(path, "r") as f:
-        colormap = np.array([[int(value) for value in row.split(" ")[1:]] for row in f.read().split("\n")])[:, :4]
-    return colormap
-
-
-def plot(model_dir="models/S_BGCN_HoustonDataset_k2_2021_04_26_2"):
-    alpha, vac, dis = [unflatten_array(array) for array in load_alpha_vac_dis(model_dir)]
+def plot(model_dir="experiments/S_BGCN_HoustonDataset_k2_2021_04_26_2"):
+    # alpha, vac, dis = [unflatten_array(array) for array in load_alpha_vac_dis(model_dir)]
+    alpha = unflatten_array(np.load(os.path.join(model_dir, "prob_pred.npy")))
     colormap = read_colormap()
 
-    fig, ax = close_fig(5, 1, width=7, height=8, keep_square=False)
+    fig, ax = close_fig(3, 1, width=7, height=4, keep_square=False)
     gt = load_gt()
     classification = np.argmax(alpha, axis=-1)
     classification_rgb = np.zeros(classification.shape + (4,), dtype=np.uint8)
@@ -36,14 +31,14 @@ def plot(model_dir="models/S_BGCN_HoustonDataset_k2_2021_04_26_2"):
     ax[0].legend(handles=legend, loc='center left', bbox_to_anchor=(1, 0.5))
     ax[1].imshow(gt_rgb)
     ax[2].imshow(classification_rgb)
-    img = ax[3].matshow(vac)
-    ax[3].set_xticks([])
-    ax[3].set_yticks([])
-    add_colorbar(fig, img, ax[3])
-    img = ax[4].matshow(dis)
-    ax[4].set_xticks([])
-    ax[4].set_yticks([])
-    add_colorbar(fig, img, ax[4])
-    set_each_ax_y_label(["Optical", "GT", "Classification", "Vacuity", "Dissonance"], ax)
+    # img = ax[3].matshow(vac)
+    # ax[3].set_xticks([])
+    # ax[3].set_yticks([])
+    # add_colorbar(fig, img, ax[3])
+    # img = ax[4].matshow(dis)
+    # ax[4].set_xticks([])
+    # ax[4].set_yticks([])
+    # add_colorbar(fig, img, ax[4])
+    set_each_ax_y_label(["Optical", "GT", "GCN\nClassification", "Vacuity", "Dissonance"], ax)
 
-    plt.show()
+    fig.savefig("docs/26_april/gcn_results.pdf", bbox_inches="tight")
