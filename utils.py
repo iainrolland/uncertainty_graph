@@ -56,6 +56,15 @@ def masks_from_gt(gt, train_ratio=0.4, val_ratio=0.3):
 
     for class_id in range(1, gt.max() + 1):  # for each output class (other than "Unclassified")
         labels, numb_objects = label(gt == class_id)  # label each contiguous block with a number from 1,...,N
+        num_pixels = (labels != 0).sum()
+        # if the labelled area for a class is small, a finer grid chop might be needed to get pixels into each split
+        if num_pixels < 1000:
+            labels = grid_chop(labels, grid_size=25)
+        elif num_pixels < 10000:
+            labels = grid_chop(labels, grid_size=150)
+        else:
+            labels = grid_chop(labels, grid_size=250)
+        numb_objects = labels.max()
         objects = np.random.choice(np.arange(1, numb_objects + 1), numb_objects, replace=False)
         numb_per_split = np.ceil(
             np.array([numb_objects * train_ratio, numb_objects * (train_ratio + val_ratio), numb_objects])).astype(int)
@@ -63,10 +72,27 @@ def masks_from_gt(gt, train_ratio=0.4, val_ratio=0.3):
         val_objects = objects[numb_per_split[0]:numb_per_split[1]]
         test_objects = objects[numb_per_split[1]:]
 
-        mask_tr = np.bitwise_or(mask_tr, np.isin(labels, training_objects))
-        mask_va = np.bitwise_or(mask_va, np.isin(labels, val_objects))
-        mask_te = np.bitwise_or(mask_te, np.isin(labels, test_objects))
+        mask_tr = mask_tr | np.isin(labels, training_objects)
+        mask_va = mask_va | np.isin(labels, val_objects)
+        mask_te = mask_te | np.isin(labels, test_objects)
     return mask_tr.flatten(), mask_va.flatten(), mask_te.flatten()
+
+
+def grid_chop(labels, grid_size=150):
+    x, y = np.array([np.arange(labels.shape[1])] * labels.shape[0]), np.array(
+        [np.arange(labels.shape[0])] * labels.shape[1]).T
+    div_x, div_y = x // grid_size, y // grid_size
+    grid_idxs = div_x + div_y * div_x.max()
+    class_mask = labels != 0
+    grid_id_nums = set(grid_idxs[class_mask])
+    object_numb = 1
+    for grid_id in grid_id_nums:
+        grid_mask = grid_idxs == grid_id
+        object_nums = set(labels[grid_mask]).difference({0})
+        for obj_num in object_nums:
+            labels[grid_mask & (labels == obj_num)] = object_numb
+            object_numb += 1
+    return labels
 
 
 def set_logger(log_path):

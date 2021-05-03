@@ -86,6 +86,9 @@ class DropoutUncertainties:
         self.mean_class_entropy = None
 
     def update(self, prob):
+        if (prob.sum(axis=1) > 1).sum() != 0:
+            message = "Probabilities sum to greater than one, has method been called using Dirichlet parameters?"
+            raise log_error(AssertionError, message)
         if self.samples_seen >= self.num_samples:
             message = "DropoutUncertainties object was instantiated expecting {} samples".format(self.num_samples)
             message += " but has been called on {} samples.".format(self.samples_seen + 1)
