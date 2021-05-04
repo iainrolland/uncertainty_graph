@@ -3,7 +3,7 @@ import matplotlib.patches as mpatches
 import numpy
 import numpy as np
 import rasterio
-from datasets import HoustonDataset_k2
+from datasets import HoustonDatasetMini
 
 
 def close_fig(numb_rows, numb_cols, boundary=0.1, width=9, height=6, keep_square=True):
@@ -42,7 +42,7 @@ def close_fig(numb_rows, numb_cols, boundary=0.1, width=9, height=6, keep_square
 
 
 def load_gt(path="houston_data/TrainingGT/2018_IEEE_GRSS_DFC_GT_TR.tif"):
-    return rasterio.open(path).read()[0]
+    return rasterio.open(path).read()[0][:, 1800:3600]
 
 
 def set_each_ax_y_label(label_list, ax_list):
@@ -65,24 +65,16 @@ def add_colorbar(fig, img, one_ax, x_shift=0.2, height_scale=0.95):
     fig.colorbar(img, ax=cbar)
 
 
-def get_shaded_data_split(split="Training"):
-    supported_splits = ["Training", "Validation", "Test"]
-    if split not in supported_splits:
-        raise ValueError("split was {} but must be one of {}.".format(split, "/".join(supported_splits)))
-
-    dataset = HoustonDataset_k2()
-
-    for one_split, mask in zip(supported_splits, [dataset.mask_tr, dataset.mask_va, dataset.mask_te]):
-        if split == one_split:
-            mask = unflatten_array(mask)[..., 0]
-            return mask
+def get_shaded_data_split(mask):
+    return unflatten_array(mask)[..., 0]
 
 
-def shade_one_axes_with_splits(ax):
+def shade_one_axes_with_splits(ax, mask_tr, mask_va, mask_te):
     legend = []
-    for split, color in zip(["Training", "Validation", "Test"],
-                            [[1., 0., 0., 0.5], [0., 1., 0., 0.5], [0., 0., 1., 0.5]]):
-        shaded = get_shaded_data_split(split)
+    for split, color, mask in zip(["Training", "Validation", "Test"],
+                                  [[1., 0., 0., 0.5], [0., 1., 0., 0.5], [0., 0., 1., 0.5]],
+                                  [mask_tr, mask_va, mask_te]):
+        shaded = get_shaded_data_split(mask)
         shaded_rgb = np.zeros(load_gt().shape + (4,)).astype("float32")
         shaded_rgb[shaded] = color
         ax.imshow(shaded_rgb)
@@ -97,7 +89,7 @@ def unflatten_array(array, output_shape=load_gt().shape):
 def classes_array_to_colormapped_array(classes_array):
     colormap = read_colormap()
     color_mapped_array = np.zeros(classes_array.shape + (4,), dtype=np.uint8)
-    for class_id in range(np.max(classes_array) + 1):
+    for class_id in range(colormap.shape[0]):
         color_mapped_array[classes_array == class_id] = colormap[class_id]
     return color_mapped_array
 
