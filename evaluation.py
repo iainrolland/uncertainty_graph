@@ -14,7 +14,7 @@ def evaluate(network, dataset, params, test_misc_detection=True, test_ood_detect
 
     # # Evaluate model
     # print("Evaluating model.")
-    # loader_te = SingleLoader(data, sample_weights=weights_te)
+    # loader_te = SingleLoader(datasets, sample_weights=weights_te)
     # eval_results = network.evaluate(loader_te.load(), steps=loader_te.steps_per_epoch)
     # print("Done.\n" "Test loss: {}\n" "Test accuracy: {}".format(*eval_results))
 

@@ -6,6 +6,7 @@
   "data": "HoustonDatasetMini",
   "ood_classes": [],
   "learning_rate": 5e-2,
+  "teacher_file_path": "experiments/GCN_HoustonDatasetMini_03_05_21_0/prob.npy",
   "teacher_coefficient": 1,
   "l2_loss_coefficient": 0.001,
   "epochs": 400,

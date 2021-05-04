@@ -24,7 +24,7 @@ class Params:
         with open(json_path) as f:
             params = json.load(f)
             # params["directory"] = make_unique_directory(
-            #     "experiments/" + params["model"] + "_" + params["data"] + "_" + format_date() + "_{}")
+            #     "experiments/" + params["model"] + "_" + params["datasets"] + "_" + format_date() + "_{}")
             self.__dict__.update(params)
 
     @property
