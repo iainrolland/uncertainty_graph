@@ -15,7 +15,7 @@ class HoustonDataset_k2(Dataset):
         super().__init__(**kwargs)
 
     def download(self):
-        y = np.rollaxis(ground_truth.data.array, 0, 3).reshape(-1, 1)
+        y = ground_truth.data.array[0].reshape(-1, 1)
         x = np.concatenate([rgb.training_array(), hyperspectral.training_array(), lidar.training_array()])
         x = np.rollaxis(x.reshape(x.shape[0], -1), 0, 2)
         print("Computing k neighbors graph...")
@@ -85,18 +85,26 @@ class HoustonDatasetMini(Dataset):
         super().__init__(**kwargs)
 
     def download(self):
-        raise NotImplementedError("Not implemented, make a copy of HoustonDataset directory named HoustonDatasetMini")
+        gt = ground_truth.data.array[0]
+        y = gt[:, 1800:3600].reshape(-1, 1)
+        x = np.concatenate([rgb.training_array(), hyperspectral.training_array(), lidar.training_array()])
+        x = x[:, :, 1800:3600]
+        x = np.rollaxis(x.reshape(x.shape[0], -1), 0, 2)
+        print("Computing k neighbors graph...")
+        a = kneighbors_graph(x, 15, include_self=False)
+        a = a + a.T  # to make graph symmetric (using k neighbours in "either" rather than "mutual" mode)
+        a[a > 1] = 1  # get rid of any edges we just made double
+        print("Graph computed.")
+
+        # Create the directory
+        os.mkdir(self.path)
+
+        filename = os.path.join(self.path, f'graph')
+        np.savez(filename, x=x, a=a, y=OneHotEncoder().fit_transform(y).toarray())
 
     def read(self):
         data = np.load(os.path.join(self.path, f'graph.npz'), allow_pickle=True)
-
-        mask = np.zeros_like(ground_truth.data.array[0]).astype("bool")
-        mask[:, 1800:3600] = True
-        mask = mask.flatten()
         x, a, y = data['x'].astype(np.float32), data['a'].tolist(), data['y'].astype(np.uint8)
-        x, a, y = x[mask], a[mask][:, mask], y[mask]
-        a = a + a.T
-        a[a > 1] = 1
 
         self.mask_tr, self.mask_va, self.mask_te = masks_from_gt(ground_truth.data.array[0][:, 1800:3600])
 
