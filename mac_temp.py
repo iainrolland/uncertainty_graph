@@ -66,9 +66,14 @@ def gauss(x, sigma=1):
 
 def alpha_prior(adjacency, y_true, training_mask, num_steps=10):
     prior = np.ones(y_true.shape)
+    masked_y = 0 * y_true
+    masked_y[training_mask] = y_true[training_mask]
+    state = masked_y
     for n_step in range(num_steps):
-        step = degree_power(adjacency, n_step + 1)[:, training_mask].dot(y_true[training_mask]) * gauss(n_step, sigma=1)
+        new_state = adjacency.dot(state)
+        step = new_state * gauss(n_step, sigma=1)
         prior += step
+        state = new_state
     return prior
 
 
@@ -96,8 +101,10 @@ if __name__ == "__main__":
     #     print(t, l2 / l2_old)
     #     if l2 / l2_old >= 0.99:
     #         break
+    # predictions = y.argmax(axis=1)
 
     alpha = alpha_prior(adj, yt, dataset.mask_tr)
+    predictions = alpha.argmax(axis=1)
 
     # Compute accuracy
-    print((y.argmax(axis=1) == yt.argmax(axis=1))[dataset.mask_te].mean())
+    print((predictions == yt.argmax(axis=1))[dataset.mask_te].mean())
