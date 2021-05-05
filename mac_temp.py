@@ -77,12 +77,14 @@ if __name__ == "__main__":
     # Update until convergence
     y, l2 = update(y, yt, flow_matrix, mask_tr)
     l2_list = [l2]
-    for t in range(1):
+    for t in range(500):
         l2_old = l2
-        y, l2 = update(y, yt, adj, mask_tr)
+        y, l2 = update(y, yt, flow_matrix, mask_tr)
         l2_list.append(l2)
+        print(t,l2/l2_old)
         if l2 / l2_old >= 0.99:
             break
 
     # Compute accuracy
-    print(np.sum(yt.argmax(axis=1) == y.argmax(axis=1)) / yt.shape[0])
+    print((y.argmax(axis=1)==yt.argmax(axis=1))[dataset.mask_te].mean())
+
