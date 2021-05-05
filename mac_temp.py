@@ -60,6 +60,18 @@ def update(state, truth, propagation_matrix, mask, step_size=.2):
     return state, update_l2
 
 
+def gauss(x, sigma=1):
+    return np.exp(-x ** 2 / 2 / sigma ** 2) * (2 * np.pi * sigma ** 2) ** -0.5
+
+
+def alpha_prior(adjacency, y_true, training_mask, num_steps=10):
+    prior = np.ones(y_true.shape)
+    for n_step in range(num_steps):
+        step = degree_power(adjacency, n_step + 1)[:, training_mask].dot(y_true[training_mask]) * gauss(n_step, sigma=1)
+        prior += step
+    return prior
+
+
 if __name__ == "__main__":
     # Load dataset
     set_seeds(0)
@@ -68,23 +80,24 @@ if __name__ == "__main__":
     yt = dataset[0].y
     mask_tr = dataset.mask_tr
 
-    # Set initial state
-    y = np.ones_like(yt) / yt.shape[1]
-    y[mask_tr] = yt[mask_tr]
+    # # Set initial state
+    # y = np.ones_like(yt) / yt.shape[1]
+    # y[mask_tr] = yt[mask_tr]
+    #
+    # flow_matrix = diffusion_filter(adj)
+    #
+    # # Update until convergence
+    # y, l2 = update(y, yt, flow_matrix, mask_tr)
+    # l2_list = [l2]
+    # for t in range(500):
+    #     l2_old = l2
+    #     y, l2 = update(y, yt, flow_matrix, mask_tr)
+    #     l2_list.append(l2)
+    #     print(t, l2 / l2_old)
+    #     if l2 / l2_old >= 0.99:
+    #         break
 
-    flow_matrix = diffusion_filter(adj)
-
-    # Update until convergence
-    y, l2 = update(y, yt, flow_matrix, mask_tr)
-    l2_list = [l2]
-    for t in range(500):
-        l2_old = l2
-        y, l2 = update(y, yt, flow_matrix, mask_tr)
-        l2_list.append(l2)
-        print(t,l2/l2_old)
-        if l2 / l2_old >= 0.99:
-            break
+    alpha = alpha_prior(adj, yt, dataset.mask_tr)
 
     # Compute accuracy
-    print((y.argmax(axis=1)==yt.argmax(axis=1))[dataset.mask_te].mean())
-
+    print((y.argmax(axis=1) == yt.argmax(axis=1))[dataset.mask_te].mean())
