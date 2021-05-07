@@ -3,7 +3,7 @@ import numpy as np
 from spektral.transforms import LayerPreprocess, AdjToSpTensor
 from spektral.layers import GCNConv
 
-from losses import SquareErrorDirichlet, TeacherAndSquareErrorDirichlet
+from losses import SquareErrorDirichlet, T_SquareErrorDirichlet, T_K_SquareErrorDirichlet
 
 
 class GCN:
@@ -28,7 +28,7 @@ class S_BGCN_T:
     loss = None
 
     def __init__(self, gcn_prob_path, teacher_coefficient):
-        self.loss = TeacherAndSquareErrorDirichlet(np.load(gcn_prob_path).astype(np.float32), teacher_coefficient)
+        self.loss = T_SquareErrorDirichlet(np.load(gcn_prob_path).astype(np.float32), teacher_coefficient)
         self.__name__ = S_BGCN_T.__name__
 
     @staticmethod
@@ -38,19 +38,48 @@ class S_BGCN_T:
         return tf.exp(x) + 1
 
 
+class S_BGCN_T_K:
+    transforms = [LayerPreprocess(GCNConv), AdjToSpTensor()]
+    loss = None
+
+    def __init__(self, gcn_prob_path, alpha_prior_path, teacher_coefficient, alpha_prior_coefficient):
+        self.loss = T_K_SquareErrorDirichlet(np.load(gcn_prob_path).astype(np.float32),
+                                             np.load(alpha_prior_path).astype(np.float32),
+                                             teacher_coefficient,
+                                             alpha_prior_coefficient)
+        self.__name__ = S_BGCN_T_K.__name__
+
+    @staticmethod
+    def output_activation(x):
+        """ makes sure model output >=1 since a) in the absence of evidence the subjective logic framework dictates
+        alpha is 1 and b) in the presence of evidence alpha is greater than 1"""
+        return tf.exp(x) + 1
+
+
 def get_model(params):
-    supported_models = dict(zip(["GCN", "Drop-GCN", "S-GCN", "S-BGCN", "S-BGCN-T"],
-                                [GCN, GCN, S_BGCN, S_BGCN, S_BGCN_T]))
+    supported_models = dict(zip(["GCN", "Drop-GCN", "S-GCN", "S-BGCN", "S-BGCN-T", "S-BGCN-T-K"],
+                                [GCN, GCN, S_BGCN, S_BGCN, S_BGCN_T, S_BGCN_T_K]))
     try:
-        if supported_models[params.model] != S_BGCN_T:
+        if params.model not in ["S-BGCN-T", "S-BGCN-T-K"]:
             return supported_models[params.model]
-        else:
+        elif params.model == "S-BGCN-T":
             try:
                 return supported_models[params.model](params.teacher_file_path, params.teacher_coefficient)
             except AttributeError:
-                message = "To train, S-BGCN-T both 'teacher_file_path' and 'teacher_coefficient' must be supplied in "
-                message += "params.json.\n(teacher_file_path is a file path pointing to GCN model probability outputs "
-                message += "and teacher_coefficient should be a float (default=1.0)"
+                message = "To train, S-BGCN-T, the following must be supplied in params.json:\n"
+                message += "-teacher_file_path (a file path pointing to GCN model probability outputs)\n"
+                message += "-teacher_coefficient (float which scales KLD(output,teacher output) loss [default: 1.0])"
+                raise AttributeError(message)
+        else:
+            try:
+                return supported_models[params.model](params.teacher_file_path, params.alpha_prior_path,
+                                                      params.teacher_coefficient, params.alpha_prior_coefficient)
+            except AttributeError:
+                message = "To train, S-BGCN-T-K, the following must be supplied in params.json:\n"
+                message += "-teacher_file_path (a file path pointing to GCN model probability outputs)\n"
+                message += "-alpha_prior_path (a file path pointing to saved alpha prior array)\n"
+                message += "-teacher_coefficient (float which scales KLD(output,teacher output) loss [default: 1.0])\n"
+                message += "-alpha_prior_coefficient (float coeff. for KLD(output, alpha prior) loss [default: 0.001])"
                 raise AttributeError(message)
     except KeyError:
         raise ValueError(

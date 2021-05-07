@@ -28,7 +28,7 @@ def launch_training_job(parent_dir, job_name, params):
     params.save(json_path)
 
     # Launch training with this config
-    cmd = "{python} GCN.py --model_dir {model_dir}".format(python=PYTHON, model_dir=model_dir)
+    cmd = "{python} training.py --model_dir {model_dir}".format(python=PYTHON, model_dir=model_dir)
     print(cmd)
     check_call(cmd, shell=True)
 
@@ -36,27 +36,21 @@ def launch_training_job(parent_dir, job_name, params):
 if __name__ == "__main__":
     # Load the "reference" parameters from .json file
     args = parser.parse_args()
-    json_path = "config_files/default_GCN.json"
+    json_path = "experiments/OOD_Detection_seed_1/params.json"
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     params = Params(json_path)
 
     # Perform hypersearch over one parameter
-    learning_rates = [1e-4, 1e-3, 1e-2]
-    channels = [8, 16, 32, 64]
-    l2_loss_coefficients = [1e-4, 1e-3, 1e-2]
-    seeds = [0, 1, 2, 3]
+    # learning_rates = [1e-4, 1e-3, 1e-2]
+    # channels = [8, 16, 32, 64]
+    # l2_loss_coefficients = [1e-4, 1e-3, 1e-2]
+    # seeds = [0, 1, 2, 3]
+    model_names = ["GCN", "Drop-GCN", "S-GCN", "S-BGCN", "S-BGCN-T", "S-BGCN-T-K"]
 
-    for learning_rate in learning_rates:
-        for channel in channels:
-            for l2_loss_coefficient in l2_loss_coefficients:
-                for seed in seeds:
-                    # Modify the relevant parameter in params
-                    params.learning_rate = learning_rate
-                    params.channels = channel
-                    params.l2_loss_coefficient = l2_loss_coefficient
-                    params.seed = seed
+    for model_name in model_names:
+        # Modify the relevant parameter in params
+        params.model = model_name
 
-                    # Launch job (name has to be unique)
-                    job_name = "lr_{}_seed_{}_channels_{}_l2_loss_{}".format(learning_rate,
-                                                                             seed, channel, l2_loss_coefficient)
-                    launch_training_job(args.parent_dir, job_name, params)
+        # Launch job (name has to be unique)
+        job_name = "model_{}".format(model_name)
+        launch_training_job(args.parent_dir, job_name, params)

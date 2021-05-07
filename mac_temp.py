@@ -1,8 +1,10 @@
+import uncertainty_utils
 from datasets import HoustonDatasetMini
 import copy
 import warnings
 import numpy as np
 from scipy import sparse as sp
+from tqdm import tqdm
 
 from utils import set_seeds
 
@@ -64,23 +66,31 @@ def gauss(x, sigma=1):
     return np.exp(-x ** 2 / 2 / sigma ** 2) * (2 * np.pi * sigma ** 2) ** -0.5
 
 
-def alpha_prior(adjacency, y_true, training_mask, num_steps=10):
+def alpha_prior(adjacency, y_true, training_mask, num_steps=50):
+    print("Propagating alpha prior...")
     prior = np.ones(y_true.shape)
     masked_y = 0 * y_true
     masked_y[training_mask] = y_true[training_mask]
     state = masked_y
+    prior_update = state * gauss(0, sigma=1)
+    prior += prior_update
     for n_step in range(num_steps):
         new_state = adjacency.dot(state)
-        step = new_state * gauss(n_step, sigma=1)
-        prior += step
+        prior_update = new_state * gauss(n_step + 1, sigma=1)
+        update_l2 = np.mean(np.power(prior_update[prior_update != 0], 2))
+        prior += prior_update
         state = new_state
-    return prior
+        if update_l2 <= 1e-32:
+            return prior
+    else:
+        raise ArithmeticError("Propagation of alpha prior not converged")
 
 
 if __name__ == "__main__":
     # Load dataset
-    set_seeds(0)
+    set_seeds(1)
     dataset = HoustonDatasetMini()
+    dataset.mask_tr[np.argwhere(np.isin(dataset[0].y.argmax(axis=-1), [1, 2, 3])).flatten()] = False
     adj = dataset[0].a
     yt = dataset[0].y
     mask_tr = dataset.mask_tr
@@ -108,3 +118,18 @@ if __name__ == "__main__":
 
     # Compute accuracy
     print((predictions == yt.argmax(axis=1))[dataset.mask_te].mean())
+
+    np.save("experiments/OOD_Detection_seed_1/alpha_prior.npy", alpha)
+
+    # alpha = np.load("pseudo_GDKE.npy")
+    # # unc = uncertainty_utils.get_subjective_uncertainties(alpha)
+    # prob = uncertainty_utils.alpha_to_prob(alpha)
+    # print((prob.argmax(axis=1) == yt.argmax(axis=1))[dataset.mask_te].mean())
+    # # misc_results = uncertainty_utils.misclassification(prob, unc, dataset[0].y, dataset.mask_te)
+    # #
+    # # auroc = [(unc, misc_results[unc]["auroc"]) for unc in misc_results]
+    # # aupr = [(unc, misc_results[unc]["aupr"]) for unc in misc_results]
+    # #
+    # # print("Misclassification AUROC: " +
+    # #       ' '.join([unc_name + " = " + str(score) for unc_name, score in auroc]))
+    # # print("Misclassification AUPR: " + ' '.join([unc_name + " = " + str(score) for unc_name, score in aupr]))

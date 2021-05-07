@@ -5,6 +5,7 @@ from tensorflow.python.keras.utils import tf_utils
 from tensorflow.python.eager import context
 from tensorflow.python.autograph.core import ag_ctx
 from tensorflow.python.autograph.impl import api as autograph
+from tensorflow_probability import distributions as tfd
 
 
 class SquareErrorDirichlet(tf.keras.losses.Loss):
@@ -19,8 +20,8 @@ class SquareErrorDirichlet(tf.keras.losses.Loss):
         return tf.reduce_sum(loss, axis=-1)
 
 
-class TeacherAndSquareErrorDirichlet(tf.keras.losses.Loss):
-    def __init__(self, teacher_prob, teacher_coefficient=1, name="teacher_and_square_error_dirichlet"):
+class T_SquareErrorDirichlet(SquareErrorDirichlet):
+    def __init__(self, teacher_prob, teacher_coefficient=1, name="t_square_error_dirichlet"):
         super().__init__(name=name)
         self.epochs = 0
         self.teacher_prob = teacher_prob
@@ -52,9 +53,41 @@ class TeacherAndSquareErrorDirichlet(tf.keras.losses.Loss):
             self.epochs += 1
             return losses + tf.cast(kld, tf.float32) * tf.minimum(self.epochs / 200, 1) * self.teacher_coefficient
 
-    def call(self, y_true, alpha):
-        y_true = tf.cast(y_true, tf.float32)
-        strength = tf.reduce_sum(alpha, axis=1, keepdims=True)
-        prob = tf.divide(alpha, strength)
-        loss = tf.reduce_sum(tf.square(prob - y_true) + prob * (1 - prob) / (strength + 1.0), axis=-1)
-        return loss
+
+class T_K_SquareErrorDirichlet(T_SquareErrorDirichlet):
+    def __init__(self, teacher_prob, alpha_prior, teacher_coefficient=1, alpha_prior_coefficient=0.001,
+                 name="t_k_square_error_dirichlet"):
+        super().__init__(teacher_prob, teacher_coefficient, name=name)
+        self.alpha_prior = tfd.Dirichlet(alpha_prior)
+        self.alpha_prior_coefficient = alpha_prior_coefficient
+
+    def __call__(self, y_true, y_pred, sample_weight=None):
+        """Needed to overwrite losses.Loss method to make sure the KLD is affected by sample_weight
+        i.e. it is calculated for all nodes
+        """
+        # If we are wrapping a lambda function strip '<>' from the name as it is not
+        # accepted in scope name.
+        graph_ctx = tf_utils.graph_context_for_symbolic_tensors(
+            y_true, y_pred, sample_weight)
+        with K.name_scope(self._name_scope), graph_ctx:
+            if context.executing_eagerly():
+                call_fn = self.call
+            else:
+                call_fn = autograph.tf_convert(self.call, ag_ctx.control_status_ctx())
+            losses = call_fn(y_true, y_pred)
+            losses = losses_utils.compute_weighted_loss(
+                losses, sample_weight, reduction=self._get_reduction())
+
+            # teacher loss
+            kld_teacher = tf.reduce_sum(
+                tf.losses.KLD(self.teacher_prob, tf.divide(y_pred, tf.reduce_sum(y_pred, axis=1, keepdims=True))))
+            kld_teacher /= tf.cast(y_pred.shape[0], tf.float32) * tf.math.log(tf.cast(y_pred.shape[1], tf.float32))
+            self.epochs += 1
+            losses += tf.cast(kld_teacher, tf.float32) * tf.minimum(self.epochs / 200, 1) * self.teacher_coefficient
+
+            # alpha_prior loss
+            kld_alpha = tf.reduce_sum(self.alpha_prior.kl_divergence(tfd.Dirichlet(y_pred)))
+            kld_alpha /= tf.cast(y_pred.shape[0], tf.float32) * tf.math.log(tf.cast(y_pred.shape[1], tf.float32))
+            losses += self.alpha_prior_coefficient * kld_alpha
+
+            return losses

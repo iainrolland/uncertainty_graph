@@ -21,10 +21,12 @@ def get_metric(model, weight):
 
 
 def train(model, dataset, params):
-    weights_va, weights_te = (
-        utils.mask_to_weights(mask).astype(np.float32)
-        for mask in (dataset.mask_va, dataset.mask_te)
-    )
+    # weights_va, weights_te = (
+    #     utils.mask_to_weights(mask).astype(np.float32)
+    #     for mask in (dataset.mask_va, dataset.mask_te)
+    # )
+    weights_va = utils.weight_by_class(dataset[0].y, dataset.mask_va).astype(np.float32)
+
     weights_tr = utils.weight_by_class(dataset[0].y, dataset.mask_tr).astype(np.float32)
 
     neural_net = GCN(n_labels=dataset.n_labels, channels=params.channels, n_input_channels=dataset.n_node_features,
