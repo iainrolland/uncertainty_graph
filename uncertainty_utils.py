@@ -177,7 +177,8 @@ def misclassification(prob, uncertainties, y_true, test_mask, n_splits=10):
 
     for split_i in range(n_splits):
         # randomly select 1000 test nodes
-        node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
+        # node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
+        node_indices = np.random.choice(np.argwhere(test_mask).flatten(), sum(test_mask), replace=False)
         # true if prediction matches label
         pred_matches_label_bool = np.equal(prob[node_indices].argmax(axis=-1),
                                            y_true[node_indices].argmax(axis=-1))
@@ -204,7 +205,9 @@ def ood_detection(uncertainties, y_true, train_mask, test_mask, n_splits=10):
                      for unc_name, unc_values in uncertainties.items()}
 
     for split_i in range(n_splits):
-        node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
+        # randomly select 1000 test nodes
+        # node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
+        node_indices = np.random.choice(np.argwhere(test_mask).flatten(), sum(test_mask), replace=False)
         # true if node from an OOD class
         is_ood_bool = np.isin(y_true[node_indices].argmax(axis=-1), list(ood_classes))
         for unc in uncertainties:
