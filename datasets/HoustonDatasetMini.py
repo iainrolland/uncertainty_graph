@@ -11,7 +11,7 @@ from utils import masks_from_gt
 
 class HoustonDatasetMini(Dataset):
     def __init__(self, **kwargs):
-        self.mask_tr = self.mask_va = self.mask_te = None
+        self.mask_tr, self.mask_va, self.mask_te = None, None, None
         super().__init__(**kwargs)
 
     def download(self):

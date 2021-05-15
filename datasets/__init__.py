@@ -1,11 +1,13 @@
 from .HoustonDataset_k2 import *
 from .HoustonDatasetMini import *
+from .HoustonSpixelMini import *
 from .Karate import *
 
 
 def get_dataset(data_name):
-    supported_datasets = dict(zip(["HoustonDataset_k2", "HoustonDatasetMini", "Karate"],
-                                  [HoustonDataset_k2, HoustonDatasetMini, Karate]))
+    supported_datasets = dict(zip(["HoustonDataset_k2", "HoustonDatasetMini", "Karate",
+                                   "HoustonSpixelMini"],
+                                  [HoustonDataset_k2, HoustonDatasetMini, Karate, HoustonSpixelMini]))
     try:
         return supported_datasets[data_name]
     except KeyError:
