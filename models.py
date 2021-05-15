@@ -76,7 +76,7 @@ def get_model(params):
     supported_models = dict(zip(["GCN", "Drop-GCN", "S-GCN", "S-BGCN", "S-BGCN-T", "S-BGCN-K", "S-BGCN-T-K"],
                                 [GCN, GCN, S_BGCN, S_BGCN, S_BGCN_T, S_BGCN_K, S_BGCN_T_K]))
     try:
-        if params.model not in ["S-BGCN-T", "S-BGCN-T-K"]:
+        if params.model not in ["S-BGCN-T", "S-BGCN-K", "S-BGCN-T-K"]:
             return supported_models[params.model]
         elif params.model == "S-BGCN-T":
             try:
