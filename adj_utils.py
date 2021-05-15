@@ -1,5 +1,5 @@
 import uncertainty_utils
-from datasets import HoustonDatasetMini
+from datasets import get_dataset
 import copy
 import warnings
 import numpy as np
@@ -8,10 +8,13 @@ from utils import set_logger
 import logging
 from time import time
 import itertools
+from scipy.sparse.csgraph import shortest_path
 from scipy.sparse import lil_matrix, csr_matrix
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from utils import set_seeds
+from plotting.utils import classes_array_to_colormapped_array
 
 
 def degree_power(A, k):
@@ -89,6 +92,26 @@ def alpha_prior(adjacency, y_true, training_mask, num_steps=50):
             return prior
     else:
         raise ArithmeticError("Propagation of alpha prior not converged")
+
+
+def alpha_prior_from_spixels(spixel_adj, segments, pixel_y_true, training_mask):
+    masked_y = 0 * pixel_y_true
+    masked_y[training_mask] = pixel_y_true[training_mask]
+
+    sp_matrix = shortest_path(spixel_adj)
+    flat_seg = segments.flatten()
+    h = gauss(sp_matrix, sigma=1)
+
+    masked_y_seg = np.array(
+        [list(masked_y[np.argwhere(flat_seg == i)].sum(axis=0).flatten()) for i in
+         range(segments.min(), segments.max() + 1)])
+
+    prior = h.dot(masked_y_seg) + 1
+    return prior  # shape: (#spixels, #classes)
+
+
+def pixels_from_spixels(array, segments):
+    return array[segments.flatten()]
 
 
 def rows_cols(segments, spixel_adj):
@@ -199,7 +222,9 @@ def meshgrid(segments, spixel_adj):
 #     logging.info("OOD Detection AUPR: " + ' '.join([unc_name + " = " + str(score) for unc_name, score in aupr]))
 #     logging.info("Test set accuracy: {}".format((prob.argmax(axis=1) == yt.argmax(axis=1))[dataset.mask_te].mean()))
 
-adj, spix = [np.load(f, allow_pickle=True) for f in ["spixels/spixel_adj.npy", "spixels/segments.npy"]]
-adj = adj.tolist()
-adj_full = csr_mat(spix, adj)
-np.save("spixels/adj_full.npy", adj_full)
+data = get_dataset("HoustonSpixelMini")()
+
+p = alpha_prior_from_spixels(data.spixel_adj, data.segments, data[0].y, data.mask_tr)
+dis, vac = uncertainty_utils.dissonance_uncertainty(p), uncertainty_utils.vacuity_uncertainty(p)
+p, vac, dis = [pixels_from_spixels(array, data.segments) for array in [p, vac, dis]]
+np.save("experiments/spixel_test/spixel_prior.npy", p)

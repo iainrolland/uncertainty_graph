@@ -91,3 +91,35 @@ class T_K_SquareErrorDirichlet(T_SquareErrorDirichlet):
             losses += self.alpha_prior_coefficient * kld_alpha
 
             return losses
+
+
+class K_SquareErrorDirichlet(SquareErrorDirichlet):
+    def __init__(self, alpha_prior, alpha_prior_coefficient=0.001,
+                 name="k_square_error_dirichlet"):
+        super().__init__(name=name)
+        self.alpha_prior = tfd.Dirichlet(alpha_prior)
+        self.alpha_prior_coefficient = alpha_prior_coefficient
+
+    def __call__(self, y_true, y_pred, sample_weight=None):
+        """Needed to overwrite losses.Loss method to make sure the KLD is affected by sample_weight
+        i.e. it is calculated for all nodes
+        """
+        # If we are wrapping a lambda function strip '<>' from the name as it is not
+        # accepted in scope name.
+        graph_ctx = tf_utils.graph_context_for_symbolic_tensors(
+            y_true, y_pred, sample_weight)
+        with K.name_scope(self._name_scope), graph_ctx:
+            if context.executing_eagerly():
+                call_fn = self.call
+            else:
+                call_fn = autograph.tf_convert(self.call, ag_ctx.control_status_ctx())
+            losses = call_fn(y_true, y_pred)
+            losses = losses_utils.compute_weighted_loss(
+                losses, sample_weight, reduction=self._get_reduction())
+
+            # alpha_prior loss
+            kld_alpha = tf.reduce_sum(self.alpha_prior.kl_divergence(tfd.Dirichlet(y_pred)))
+            kld_alpha /= tf.cast(y_pred.shape[0], tf.float32) * tf.math.log(tf.cast(y_pred.shape[1], tf.float32))
+            losses += self.alpha_prior_coefficient * kld_alpha
+
+            return losses

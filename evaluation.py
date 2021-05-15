@@ -35,7 +35,7 @@ def evaluate(network, dataset, params, test_misc_detection=True, test_ood_detect
         alpha = np.array(network(inputs, training=False))
         uncertainties = uu.get_subjective_uncertainties(alpha)
         prob = uu.alpha_to_prob(alpha)
-    elif params.model in ["S-BGCN", "S-BGCN-T", "S-BGCN-T-K"]:
+    elif params.model in ["S-BGCN", "S-BGCN-T", "S-BGCN-K", "S-BGCN-T-K"]:
         sb_unc = uu.SubjectiveBayesianUncertainties(100)
         for _ in tqdm(range(100)):
             sb_unc.update(alpha=np.array(network(inputs, training=True)))
@@ -44,6 +44,8 @@ def evaluate(network, dataset, params, test_misc_detection=True, test_ood_detect
     else:
         raise log_error(ValueError,
                         "model was {} but must be one of {}.".format(params.model, "/".join(supported_models)))
+
+    np.save(os.path.join(params.directory, "prob.npy"), prob)
 
     if test_misc_detection:
         misc_results = uu.misclassification(prob, uncertainties, dataset[0].y, dataset.mask_te)
@@ -66,5 +68,3 @@ def evaluate(network, dataset, params, test_misc_detection=True, test_ood_detect
 
     test_acc = np.equal(prob.argmax(axis=1), dataset[0].y.argmax(axis=1))[dataset.mask_te].sum() / dataset.mask_te.sum()
     logging.info("Test set accuracy: {}".format(test_acc))
-
-    np.save(os.path.join(params.directory, "prob.npy"), prob)

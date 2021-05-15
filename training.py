@@ -7,7 +7,7 @@ import argparse
 from glob import glob
 
 from params import Params
-from models import get_model
+from models import get_model, S_BGCN_K
 import datasets
 import utils
 from evaluation import evaluate
@@ -73,9 +73,9 @@ if __name__ == "__main__":
     parameters = Params(json_path)
     parameters.directory = args.model_dir
 
-    # Check that we are not overwriting some previous experiment
-    if len(glob(os.path.join(args.model_dir, "*.h5"))) > 0:
-        raise utils.log_error(AssertionError, "Weights found in model_dir, aborting to avoid overwrite")
+    # # Check that we are not overwriting some previous experiment
+    # if len(glob(os.path.join(args.model_dir, "*.h5"))) > 0:
+    #     raise utils.log_error(AssertionError, "Weights found in model_dir, aborting to avoid overwrite")
 
     # Set to use the specified GPUs
     utils.gpu_initialise(parameters.gpu_list)
@@ -101,5 +101,9 @@ if __name__ == "__main__":
     else:
         test_ood = False
 
-    network = train(model_type, data, parameters)
+    # network = train(model_type, data, parameters)
+    network = GCN(n_labels=data.n_labels, channels=parameters.channels, n_input_channels=data.n_node_features,
+                  output_activation=S_BGCN_K.output_activation, l2_reg=parameters.l2_loss_coefficient)
+    network.predict((np.ones((2, 54), dtype="float32"), np.ones((2, 2))))
+    network.load_weights(os.path.join(args.model_dir, "S_BGCN_K.h5"))
     evaluate(network, data, parameters, test_ood_detection=test_ood)

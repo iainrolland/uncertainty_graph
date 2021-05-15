@@ -124,3 +124,15 @@ def set_logger(log_path):
 def log_error(error_type, message):
     logging.critical(message)
     return error_type(message)
+
+
+def parse_log(log_path):
+    with open(log_path, 'r') as f:
+        log = f.read()
+        lines = log.split("\n")[:-1]
+        metrics = [l.split(': ')[-2] for l in lines]
+        scores = [[thing for thing in l.split(': ')[-1].split(' ') if thing != "="] for l in lines]
+        scores = [
+            {unc_name: float(unc_score) for unc_name, unc_score in zip(metric_scores[::2], metric_scores[1::2])} if len(
+                metric_scores) > 1 else float(metric_scores[0]) for metric_scores in scores]
+    return {metric: score for metric, score in zip(metrics, scores)}
