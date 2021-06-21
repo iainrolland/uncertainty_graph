@@ -10,7 +10,7 @@ from spektral.data import SingleLoader
 
 
 def evaluate(network, dataset, params, test_misc_detection=True, test_ood_detection=True):
-    supported_models = ["Drop-GCN", "GCN", "S-GCN", "S-BGCN", "S-BGCN-T", "S-BGCN-T-K"]
+    supported_models = ["Drop-GCN", "GCN", "S-GCN", "S-BGCN", "S-BGCN-T", "S-BGCN-T-K", "S-BMLP"]
 
     # # Evaluate model
     # print("Evaluating model.")
@@ -35,16 +35,21 @@ def evaluate(network, dataset, params, test_misc_detection=True, test_ood_detect
         alpha = np.array(network(inputs, training=False))
         uncertainties = uu.get_subjective_uncertainties(alpha)
         prob = uu.alpha_to_prob(alpha)
-    elif params.model in ["S-BGCN", "S-BGCN-T", "S-BGCN-K", "S-BGCN-T-K"]:
+    elif params.model in ["S-BGCN", "S-BGCN-T", "S-BGCN-K", "S-BGCN-T-K", "S-BMLP"]:
         sb_unc = uu.SubjectiveBayesianUncertainties(100)
         for _ in tqdm(range(100)):
-            sb_unc.update(alpha=np.array(network(inputs, training=True)))
+            if params.model == "S-BMLP":
+                alpha = np.array(network(inputs[0], training=True))  # i.e. don't pass in the adjacency matrix to MLP
+            else:
+                alpha = np.array(network(inputs, training=True))
+            sb_unc.update(alpha=alpha)
         uncertainties = sb_unc.get_uncertainties()
         prob = sb_unc.mean_prob
     else:
         raise log_error(ValueError,
                         "model was {} but must be one of {}.".format(params.model, "/".join(supported_models)))
 
+    np.save(os.path.join(params.directory, "alpha.npy"), np.array(network(inputs)))
     np.save(os.path.join(params.directory, "prob.npy"), prob)
 
     if test_misc_detection:
@@ -66,5 +71,5 @@ def evaluate(network, dataset, params, test_misc_detection=True, test_ood_detect
         logging.info("OOD Detection AUROC: " + ' '.join([unc_name + " = " + str(score) for unc_name, score in auroc]))
         logging.info("OOD Detection AUPR: " + ' '.join([unc_name + " = " + str(score) for unc_name, score in aupr]))
 
-    test_acc = np.equal(prob.argmax(axis=1), dataset[0].y.argmax(axis=1))[dataset.mask_te].sum() / dataset.mask_te.sum()
+    test_acc = (prob.argmax(axis=1) == dataset[0].y.argmax(axis=1))[dataset.mask_te].mean()
     logging.info("Test set accuracy: {}".format(test_acc))
