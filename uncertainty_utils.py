@@ -168,53 +168,51 @@ def get_subjective_bayesian_uncertainties(alpha_samples):
     return uncertainties
 
 
-def misclassification(prob, uncertainties, y_true, test_mask, n_splits=10):
+def misclassification(prob, uncertainties, y_true, test_mask):
     # Don't consider nodes in the Unclassified class (id 0)
-    test_mask[np.argwhere((y_true.argmax(axis=-1) == 0) & test_mask).flatten()] = False
+    mask_test = test_mask.copy()
+    mask_test[np.argwhere((y_true.argmax(axis=-1) == 0) & mask_test).flatten()] = False
 
-    uncertainties = {unc_name: {"values": unc_values, "auroc": np.zeros(n_splits), "aupr": np.zeros(n_splits)}
+    uncertainties = {unc_name: {"values": unc_values, "auroc": 0, "aupr": 0}
                      for unc_name, unc_values in uncertainties.items()}
 
-    for split_i in range(n_splits):
-        # randomly select 1000 test nodes
-        # node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
-        node_indices = np.random.choice(np.argwhere(test_mask).flatten(), sum(test_mask), replace=False)
-        # true if prediction matches label
-        pred_matches_label_bool = np.equal(prob[node_indices].argmax(axis=-1),
-                                           y_true[node_indices].argmax(axis=-1))
-        for unc in uncertainties:
-            uncertainties[unc]["auroc"][split_i] = roc_auc_score(~pred_matches_label_bool,
-                                                                 uncertainties[unc]["values"][node_indices])
-            uncertainties[unc]["aupr"][split_i] = average_precision_score(~pred_matches_label_bool,
-                                                                          uncertainties[unc]["values"][
-                                                                              node_indices])
+    # node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
+    node_indices = np.random.choice(np.argwhere(mask_test).flatten(), sum(mask_test), replace=False)
+    # true if prediction matches label
+    pred_matches_label_bool = np.equal(prob[node_indices].argmax(axis=-1),
+                                       y_true[node_indices].argmax(axis=-1))
+    for unc in uncertainties:
+        uncertainties[unc]["auroc"] = roc_auc_score(~pred_matches_label_bool,
+                                                    uncertainties[unc]["values"][node_indices])
+        uncertainties[unc]["aupr"] = average_precision_score(~pred_matches_label_bool,
+                                                             uncertainties[unc]["values"][
+                                                                 node_indices])
 
-    return {unc_name: {dict_key: unc_values[dict_key].mean() for dict_key in unc_values if dict_key != "values"} for
+    return {unc_name: {dict_key: unc_values[dict_key] for dict_key in unc_values if dict_key != "values"} for
             unc_name, unc_values in uncertainties.items()}
 
 
-def ood_detection(uncertainties, y_true, train_mask, test_mask, n_splits=10):
+def ood_detection(uncertainties, y_true, train_mask, test_mask):
     # Consider nodes in the Unclassified class (id 0) as neither in nor out of distribution i.e. just remove them
-    test_mask[np.argwhere((y_true.argmax(axis=-1) == 0) & test_mask).flatten()] = False
+    mask_test = test_mask.copy()
+    mask_test[np.argwhere((y_true.argmax(axis=-1) == 0) & mask_test).flatten()] = False
 
     train_classes = set(np.argwhere(y_true[train_mask].sum(axis=0) != 0).flatten())
-    test_classes = set(np.argwhere(y_true[test_mask].sum(axis=0) != 0).flatten())
+    test_classes = set(np.argwhere(y_true[mask_test].sum(axis=0) != 0).flatten())
     ood_classes = test_classes.difference(train_classes)
 
-    uncertainties = {unc_name: {"values": unc_values, "auroc": np.zeros(n_splits), "aupr": np.zeros(n_splits)}
+    uncertainties = {unc_name: {"values": unc_values, "auroc": 0, "aupr": 0}
                      for unc_name, unc_values in uncertainties.items()}
 
-    for split_i in range(n_splits):
-        # randomly select 1000 test nodes
-        # node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
-        node_indices = np.random.choice(np.argwhere(test_mask).flatten(), sum(test_mask), replace=False)
-        # true if node from an OOD class
-        is_ood_bool = np.isin(y_true[node_indices].argmax(axis=-1), list(ood_classes))
-        for unc in uncertainties:
-            uncertainties[unc]["auroc"][split_i] = roc_auc_score(is_ood_bool,
-                                                                 uncertainties[unc]["values"][node_indices])
-            uncertainties[unc]["aupr"][split_i] = average_precision_score(is_ood_bool,
-                                                                          uncertainties[unc]["values"][node_indices])
+    # node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
+    node_indices = np.random.choice(np.argwhere(mask_test).flatten(), sum(mask_test), replace=False)
+    # true if node from an OOD class
+    is_ood_bool = np.isin(y_true[node_indices].argmax(axis=-1), list(ood_classes))
+    for unc in uncertainties:
+        uncertainties[unc]["auroc"] = roc_auc_score(is_ood_bool,
+                                                    uncertainties[unc]["values"][node_indices])
+        uncertainties[unc]["aupr"] = average_precision_score(is_ood_bool,
+                                                             uncertainties[unc]["values"][node_indices])
 
-    return {unc_name: {dict_key: unc_values[dict_key].mean() for dict_key in unc_values if dict_key != "values"} for
+    return {unc_name: {dict_key: unc_values[dict_key] for dict_key in unc_values if dict_key != "values"} for
             unc_name, unc_values in uncertainties.items()}
