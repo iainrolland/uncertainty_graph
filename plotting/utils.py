@@ -1,13 +1,11 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import numpy
 import numpy as np
 import rasterio
-from datasets import HoustonDatasetMini
 
 
-def close_fig(numb_rows, numb_cols, boundary=0.1, width=9, height=6, keep_square=True):
-    fig, ax = plt.subplots(numb_rows, numb_cols, figsize=(width, height))
+def dense_fig(numb_rows, numb_cols, boundary=0.1, width=9, height=6, keep_square=True, sharex=False, sharey=False):
+    fig, ax = plt.subplots(numb_rows, numb_cols, figsize=(width, height), sharex=sharex, sharey=sharey)
     if isinstance(ax, np.ndarray):
         if ax.ndim == 2:
             ax_list = [b for a in ax for b in a]
@@ -50,6 +48,16 @@ def set_each_ax_y_label(label_list, ax_list):
         ax.set_ylabel(label)
 
 
+def remove_ax_ticks(ax):
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+
+def remove_ax_list_ticks(ax_list):
+    for ax in ax_list:
+        remove_ax_ticks(ax)
+
+
 def set_rcParams():
     plt.rcParams["figure.dpi"] = 300
     plt.rcParams["font.family"] = "Times New Roman"
@@ -82,7 +90,9 @@ def shade_one_axes_with_splits(ax, mask_tr, mask_va, mask_te):
     return legend
 
 
-def unflatten_array(array, output_shape=load_gt().shape):
+def unflatten_array(array, output_shape=None):
+    if output_shape is None:
+        output_shape = load_gt().shape
     return array.reshape(output_shape + (-1,))
 
 
