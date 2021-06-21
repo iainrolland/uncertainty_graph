@@ -1,4 +1,5 @@
-import uncertainty_utils
+import uncertainty_utils as uu
+import utils
 from datasets import get_dataset
 import copy
 import warnings
@@ -74,9 +75,9 @@ def gauss(x, sigma=1):
     return np.exp(-x ** 2 / 2 / sigma ** 2) * (2 * np.pi * sigma ** 2) ** -0.5
 
 
-def alpha_prior(adjacency, y_true, training_mask, num_steps=50):
+def alpha_prior(adjacency, y_true, training_mask, num_steps=50, w_scale=1):
     print("Propagating alpha prior...")
-    prior = np.ones(y_true.shape)
+    prior = np.ones(y_true.shape, dtype="float32")
     masked_y = 0 * y_true
     masked_y[training_mask] = y_true[training_mask]
     state = masked_y
@@ -84,30 +85,31 @@ def alpha_prior(adjacency, y_true, training_mask, num_steps=50):
     prior += prior_update
     for n_step in range(num_steps):
         new_state = adjacency.dot(state)
-        prior_update = new_state * gauss(n_step + 1, sigma=1)
+        prior_update = new_state * gauss(n_step + 1, sigma=scale)
         update_l2 = np.mean(np.power(prior_update[prior_update != 0], 2))
         prior += prior_update
         state = new_state
+        print(update_l2)
         if update_l2 <= 1e-32:
             return prior
     else:
         raise ArithmeticError("Propagation of alpha prior not converged")
 
 
-def alpha_prior_from_spixels(spixel_adj, segments, pixel_y_true, training_mask):
+def alpha_prior_from_spixels(spixel_adj, segments, pixel_y_true, training_mask, scale=1):
     masked_y = 0 * pixel_y_true
     masked_y[training_mask] = pixel_y_true[training_mask]
 
     sp_matrix = shortest_path(spixel_adj)
     flat_seg = segments.flatten()
-    h = gauss(sp_matrix, sigma=1)
+    h = gauss(sp_matrix, sigma=scale)
 
     masked_y_seg = np.array(
         [list(masked_y[np.argwhere(flat_seg == i)].sum(axis=0).flatten()) for i in
          range(segments.min(), segments.max() + 1)])
 
     prior = h.dot(masked_y_seg) + 1
-    return prior  # shape: (#spixels, #classes)
+    return prior.astype("float32")  # shape: (#spixels, #classes)
 
 
 def pixels_from_spixels(array, segments):
@@ -163,68 +165,29 @@ def meshgrid(segments, spixel_adj):
     print(time() - one)
 
 
-# if __name__ == "__main__":
-#     ood_classes = [9, 13]
-#
-#     # Load dataset
-#     set_seeds(1)
-#     dataset = HoustonDatasetMini()
-#     dataset.mask_tr[np.argwhere(np.isin(dataset[0].y.argmax(axis=-1), ood_classes)).flatten()] = False
-#     adj = dataset[0].a
-#     yt = dataset[0].y
-#     mask_tr = dataset.mask_tr
-#
-#     # # Set initial state
-#     # y = np.ones_like(yt) / yt.shape[1]
-#     # y[mask_tr] = yt[mask_tr]
-#     #
-#     # flow_matrix = diffusion_filter(adj)
-#     #
-#     # # Update until convergence
-#     # y, l2 = update(y, yt, flow_matrix, mask_tr)
-#     # l2_list = [l2]
-#     # for t in range(500):
-#     #     l2_old = l2
-#     #     y, l2 = update(y, yt, flow_matrix, mask_tr)
-#     #     l2_list.append(l2)
-#     #     print(t, l2 / l2_old)
-#     #     if l2 / l2_old >= 0.99:
-#     #         break
-#     # predictions = y.argmax(axis=1)
-#
-#     # alpha = alpha_prior(adj, yt, dataset.mask_tr)
-#     # predictions = alpha.argmax(axis=1)
-#     #
-#     # # Compute accuracy
-#     # print((predictions == yt.argmax(axis=1))[dataset.mask_te].mean())
-#     #
-#     # np.save("experiments/OOD_Detection_seed_1/alpha_prior.npy", alpha)
-#
-#     set_logger("experiments/Sampled_OOD_classes/ood_classes_{}{}_alpha_prior/train.log".format(*ood_classes))
-#     alpha = np.load("experiments/Sampled_OOD_classes/alpha_{}_{}_prior.npy".format(*ood_classes))
-#     unc = uncertainty_utils.get_subjective_uncertainties(alpha)
-#     prob = uncertainty_utils.alpha_to_prob(alpha)
-#
-#     misc_results = uncertainty_utils.misclassification(prob, unc, dataset[0].y, dataset.mask_te)
-#     ood_results = uncertainty_utils.ood_detection(unc, dataset[0].y, dataset.mask_tr, dataset.mask_te)
-#
-#     auroc = [(unc, misc_results[unc]["auroc"]) for unc in misc_results]
-#     aupr = [(unc, misc_results[unc]["aupr"]) for unc in misc_results]
-#
-#     logging.info("Misclassification AUROC: " +
-#                  ' '.join([unc_name + " = " + str(score) for unc_name, score in auroc]))
-#     logging.info("Misclassification AUPR: " + ' '.join([unc_name + " = " + str(score) for unc_name, score in aupr]))
-#     auroc = [(unc, misc_results[unc]["auroc"]) for unc in misc_results]
-#     aupr = [(unc, misc_results[unc]["aupr"]) for unc in misc_results]
-#
-#     logging.info("OOD Detection AUROC: " +
-#                  ' '.join([unc_name + " = " + str(score) for unc_name, score in auroc]))
-#     logging.info("OOD Detection AUPR: " + ' '.join([unc_name + " = " + str(score) for unc_name, score in aupr]))
-#     logging.info("Test set accuracy: {}".format((prob.argmax(axis=1) == yt.argmax(axis=1))[dataset.mask_te].mean()))
+if __name__ == '__main__':
+    seed = 1
+    utils.set_seeds(seed)
+    ood_classes = [[4, 2], [16, 13], [1, 10], [8, 12], [2, 13], [16, 11], [5, 4], [9, 13], [13, 1], [7, 12]]
 
-data = get_dataset("HoustonSpixelMini")()
+    # data = get_dataset("HoustonDatasetMini")()
+    data = get_dataset("HoustonSpixelMini")()
+    all_classes_mask_tr = data.mask_tr.copy()
+    # data.read()
 
-p = alpha_prior_from_spixels(data.spixel_adj, data.segments, data[0].y, data.mask_tr)
-dis, vac = uncertainty_utils.dissonance_uncertainty(p), uncertainty_utils.vacuity_uncertainty(p)
-p, vac, dis = [pixels_from_spixels(array, data.segments) for array in [p, vac, dis]]
-np.save("experiments/spixel_test/spixel_prior.npy", p)
+    app = "experiments/Sampled_OOD_classes/spixel_{}_{}_prior.npy"
+
+    for ood_c in ood_classes:
+        ood_classes_mask_tr = data.mask_tr.copy()
+        ood_classes_mask_tr[np.argwhere(np.isin(data[0].y.argmax(axis=-1), ood_c)).flatten()] = False
+        # prior = alpha_prior(data[0].a, data[0].y, data.mask_tr, w_scale=scale, num_steps=1000)
+        prior = pixels_from_spixels(
+            alpha_prior_from_spixels(data.spixel_adj, data.segments, data[0].y, ood_classes_mask_tr, scale=1),
+            data.segments)
+        np.save(app.format(*ood_c), prior)
+        print((prior.argmax(axis=1) == data[0].y.argmax(axis=1))[data.mask_te].mean())
+    # prior, vac, dis = [np.load("experiments/all_paths_vary_scale_vertically/seed_0_v_scale_1.9_{}.npy".format(t)) for t in
+    #                    ["prior", "vac", "dis"]]
+    # unc = uu.get_subjective_uncertainties(prior)
+    # foo = uu.misclassification(uu.alpha_to_prob(prior), unc, data[0].y, data.mask_te)
+    # print(foo)
