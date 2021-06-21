@@ -2,12 +2,16 @@ from .HoustonDataset_k2 import *
 from .HoustonDatasetMini import *
 from .HoustonSpixelMini import *
 from .Karate import *
+import sys
+
+sys.path.insert(1, "/home/bkwai/PycharmProjects/damage-assessment")
+from BeirutDataset import BeirutDataset
 
 
 def get_dataset(data_name):
     supported_datasets = dict(zip(["HoustonDataset_k2", "HoustonDatasetMini", "Karate",
-                                   "HoustonSpixelMini"],
-                                  [HoustonDataset_k2, HoustonDatasetMini, Karate, HoustonSpixelMini]))
+                                   "HoustonSpixelMini", "BeirutDataset"],
+                                  [HoustonDataset_k2, HoustonDatasetMini, Karate, HoustonSpixelMini, BeirutDataset]))
     try:
         return supported_datasets[data_name]
     except KeyError:
