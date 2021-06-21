@@ -2,6 +2,7 @@ import argparse
 import os
 from subprocess import check_call
 import sys
+from glob import glob
 
 from params import Params
 
@@ -34,26 +35,25 @@ def launch_training_job(parent_dir, job_name, params):
 
 
 if __name__ == "__main__":
-    # Load the "reference" parameters from .json file
     args = parser.parse_args()
+
+    # Perform hypersearch over parameters
+    seed = 1
+    ood_classes = [[4, 2], [16, 13], [1, 10], [8, 12], [2, 13], [16, 11], [5, 4], [9, 13], [13, 1], [7, 12]]
+    # alpha_prior_path = "experiments/Sampled_OOD_classes/spixel_{}_{}_prior.npy"
+    # teacher_file_path = "experiments/Sampled_OOD_classes/ood_classes_{}{}_model_GCN/prob.npy"
+
     json_path = "experiments/Sampled_OOD_classes/params.json"
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     params = Params(json_path)
+    params.model = "S-BMLP"
 
-    # Perform hypersearch over one parameter
-    # learning_rates = [1e-4, 1e-3, 1e-2]
-    # channels = [8, 16, 32, 64]
-    # l2_loss_coefficients = [1e-4, 1e-3, 1e-2]
-    # seeds = [0, 1, 2, 3]
-    ood_classes_list = [[7, 12], [1, 10], [13, 1], [5, 4], [9, 13], [8, 12], [4, 2], [2, 13], [16, 13], [16, 11]]
-    model_names = ["GCN", "Drop-GCN", "S-GCN", "S-BGCN", "S-BGCN-T", "S-BGCN-T-K"]
+    for ood_c in ood_classes:
+        job_name = "ood_classes_{}{}_model_S-BMLP".format(*ood_c)
 
-    for ood_classes in ood_classes_list:
-        for model_name in model_names:
-            # Modify the relevant parameter in params
-            params.ood_classes = ood_classes
-            params.model = model_name
+        # params.alpha_prior_path = alpha_prior_path.format(*ood_c)
+        # params.teacher_file_path = teacher_file_path.format(*ood_c)
+        params.ood_classes = ood_c
 
-            # Launch job (name has to be unique)
-            job_name = "ood_classes_{}{}_model_{}".format(*ood_classes, model_name)
-            launch_training_job(args.parent_dir, job_name, params)
+        # Launch job (name has to be unique)
+        launch_training_job(args.parent_dir, job_name, params)
