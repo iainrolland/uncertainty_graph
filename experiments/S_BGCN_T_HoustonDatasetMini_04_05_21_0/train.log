@@ -1,12 +1,3 @@
-2021-05-04 10:08:43,912:INFO: Misclassification AUROC: vacuity = 0.7285312131571617 dissonance = 0.8415770461282257 entropy = 0.8594803493042182
-2021-05-04 10:08:43,913:INFO: Misclassification AUPR: vacuity = 0.4716079336213757 dissonance = 0.5379675776492744 entropy = 0.5949840024647882
-2021-05-04 10:08:44,009:INFO: Test set accuracy: 0.772972680161066
-2021-05-04 10:41:18,568:CRITICAL: Probabilities sum to greater than one, has method been called using Dirichlet parameters?
-2021-05-04 10:46:26,110:CRITICAL: Probabilities sum to greater than one, has method been called using Dirichlet parameters?
-2021-05-04 10:48:40,085:CRITICAL: Probabilities sum to greater than one, has method been called using Dirichlet parameters?
-2021-05-04 10:57:55,982:INFO: Misclassification AUROC: entropy = 0.8859255309529377 aleatoric = 0.8941156722934707 epistemic = 0.6226446462919932 vacuity = 0.7599651238856928 dissonance = 0.8767053143397788
-2021-05-04 10:57:55,982:INFO: Misclassification AUPR: entropy = 0.6159947963399592 aleatoric = 0.6332402961537867 epistemic = 0.2682716986587782 vacuity = 0.48945567026695364 dissonance = 0.5575164894209009
-2021-05-04 10:57:56,084:INFO: Test set accuracy: 0.790934616565248
 2021-05-04 11:45:45,707:INFO: Misclassification AUROC: entropy = 0.8606198005908942 aleatoric = 0.8687673203804982 epistemic = 0.6183118417618912 vacuity = 0.7291401194403005 dissonance = 0.8340035115096965
 2021-05-04 11:45:45,774:INFO: Misclassification AUPR: entropy = 0.579446761663184 aleatoric = 0.5912929482142947 epistemic = 0.2775716868717629 vacuity = 0.450873577907997 dissonance = 0.4836973237146454
 2021-05-04 11:45:45,881:INFO: Test set accuracy: 0.8002518914429136
