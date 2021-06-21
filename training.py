@@ -7,51 +7,18 @@ import argparse
 from glob import glob
 
 from params import Params
-from models import get_model, S_BGCN_K
+from models import get_model
 import datasets
 import utils
 from evaluation import evaluate
 
 
-def get_metric(model, weight):
-    def gcn_conv_0_l2_reg_loss(y_true, y_pred):
-        return tf.nn.l2_loss(model.layers[1].kernel) * weight
-
-    return gcn_conv_0_l2_reg_loss
-
-
 def train(model, dataset, params):
-    # weights_va, weights_te = (
-    #     utils.mask_to_weights(mask).astype(np.float32)
-    #     for mask in (dataset.mask_va, dataset.mask_te)
-    # )
-    weights_va = utils.weight_by_class(dataset[0].y, dataset.mask_va).astype(np.float32)
-
-    weights_tr = utils.weight_by_class(dataset[0].y, dataset.mask_tr).astype(np.float32)
-
-    neural_net = GCN(n_labels=dataset.n_labels, channels=params.channels, n_input_channels=dataset.n_node_features,
-                     output_activation=model.output_activation, l2_reg=params.l2_loss_coefficient)
-    neural_net.compile(
-        optimizer=tf.keras.optimizers.Adam(params.learning_rate),
-        loss=model.loss,
-        weighted_metrics=["acc", get_metric(neural_net, params.l2_loss_coefficient)]
-    )
+    neural_net = model.get_network(params, dataset.n_node_features, dataset.n_labels)
+    model.compile_network(params)
 
     # Train model
-    loader_tr = SingleLoader(dataset, sample_weights=weights_tr)
-    loader_va = SingleLoader(dataset, sample_weights=weights_va)
-    history = neural_net.fit(
-        loader_tr.load(),
-        steps_per_epoch=loader_tr.steps_per_epoch,
-        validation_data=loader_va.load(),
-        validation_steps=loader_va.steps_per_epoch,
-        epochs=params.epochs,
-        callbacks=[tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=params.patience,
-                                                    restore_best_weights=True),
-                   tf.keras.callbacks.ModelCheckpoint(os.path.join(params.directory, model.__name__ + ".h5"),
-                                                      monitor="val_loss", save_best_only=True,
-                                                      save_weights_only=False)],
-    )
+    history = model.fit_network(params, dataset)
 
     np.save(os.path.join(params.directory, "history"), history.history["val_loss"])
     return neural_net
@@ -73,9 +40,9 @@ if __name__ == "__main__":
     parameters = Params(json_path)
     parameters.directory = args.model_dir
 
-    # Check that we are not overwriting some previous experiment
-    if len(glob(os.path.join(args.model_dir, "*.h5"))) > 0:
-        raise utils.log_error(AssertionError, "Weights found in model_dir, aborting to avoid overwrite")
+    # # Check that we are not overwriting some previous experiment
+    # if len(glob(os.path.join(args.model_dir, "*.h5"))) > 0:
+    #     raise utils.log_error(AssertionError, "Weights found in model_dir, aborting to avoid overwrite")
 
     # Set to use the specified GPUs
     utils.gpu_initialise(parameters.gpu_list)
@@ -101,5 +68,22 @@ if __name__ == "__main__":
     else:
         test_ood = False
 
-    network = train(model_type, data, parameters)
+    if len(glob(os.path.join(args.model_dir, "*.h5"))) > 0:  # if model_weights exist in directory -> load
+        model = get_model(parameters)
+        model.get_network(parameters, data.n_node_features, data.n_labels)
+        network = model.network
+        # network.predict(np.ones((1, data.n_node_features)))  # dummy predict in order to build correct dims
+        network.predict(
+            (np.ones((2, data.n_node_features)), np.ones((2, 2))))  # dummy predict in order to build correct dims
+        network.load_weights(os.path.join(args.model_dir, model.__name__ + ".h5"))
+    elif len(glob(os.path.join(args.model_dir, "*.new_ext"))) > 0:  # if model_weights exist in directory -> load
+        model = get_model(parameters)
+        model.get_network(parameters, data.n_node_features, data.n_labels)
+        network = model.network
+        network.predict((np.ones((2, data.n_node_features)), np.ones((2, 2))))  # dummy predict in order to build correct dims
+        network.load_weights(os.path.join(args.model_dir, model.__name__ + ".new_ext"))
+ 
+    else:
+        network = train(model_type, data, parameters)
+
     evaluate(network, data, parameters, test_ood_detection=test_ood)
