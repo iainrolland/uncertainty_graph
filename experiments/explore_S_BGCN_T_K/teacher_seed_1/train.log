@@ -1,0 +1,4 @@
+2021-05-12 12:58:47,805:CRITICAL: Weights found in model_dir, aborting to avoid overwrite
+2021-05-12 14:26:52,141:INFO: Misclassification AUROC: entropy = 0.8545598495536634
+2021-05-12 14:26:52,142:INFO: Misclassification AUPR: entropy = 0.7296026058090688
+2021-05-12 14:26:52,234:INFO: Test set accuracy: 0.6240647673132366

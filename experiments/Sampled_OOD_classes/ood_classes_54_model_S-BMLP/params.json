@@ -1,0 +1,16 @@
+{
+    "model": "S-BMLP",
+    "gpu_list": [],
+    "seed": 0,
+    "hidden_units_1": 16,
+    "hidden_units_2": 16,
+    "data": "HoustonDatasetMini",
+    "ood_classes": [
+        5,
+        4
+    ],
+    "l2_loss_coefficient": 0.001,
+    "learning_rate": 0.005,
+    "epochs": 400,
+    "patience": 60
+}

@@ -1,0 +1,16 @@
+{
+    "model": "S-BGCN-T-K",
+    "gpu_list": [],
+    "seed": 1,
+    "channels": 16,
+    "data": "HoustonDatasetMini",
+    "ood_classes": [],
+    "learning_rate": 0.1,
+    "teacher_file_path": "experiments/explore_S_BGCN_T_K/teacher_seed_1/prob.npy",
+    "alpha_prior_path": "experiments/explore_S_BGCN_T_K/alpha_prior_seed_1.npy",
+    "alpha_prior_coefficient": 0.01,
+    "teacher_coefficient": 10,
+    "l2_loss_coefficient": 0.001,
+    "epochs": 400,
+    "patience": 60
+}
