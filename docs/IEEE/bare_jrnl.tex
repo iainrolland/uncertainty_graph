@@ -1,0 +1,953 @@
+%% bare_jrnl.tex
+%% V1.4a
+%% 2014/09/17
+%% by Michael Shell
+%% see http://www.michaelshell.org/
+%% for current contact information.
+%%
+%% This is a skeleton file demonstrating the use of IEEEtran.cls
+%% (requires IEEEtran.cls version 1.8a or later) with an IEEE
+%% journal paper.
+%%
+%% Support sites:
+%% http://www.michaelshell.org/tex/ieeetran/
+%% http://www.ctan.org/tex-archive/macros/latex/contrib/IEEEtran/
+%% and
+%% http://www.ieee.org/
+
+
+
+\documentclass[journal]{IEEEtran}
+
+% Some very useful LaTeX packages include:
+\usepackage{tcolorbox}
+\usepackage{array}
+\newcolumntype{N}{>{\centering\arraybackslash}m{.9cm}}
+\newcolumntype{M}{>{\centering\arraybackslash}m{1.0cm}}
+\newcolumntype{Z}{>{\centering\arraybackslash}m{1.6cm}}
+\newcolumntype{L}{>{\centering\arraybackslash}m{2.3cm}}
+\usepackage{multirow}
+% (uncomment the ones you want to load)
+
+% ORCID icon
+\usepackage{tikz,xcolor}
+\usepackage[hidelinks]{hyperref}
+% Make Orcid icon
+\newcommand{\orcidicon}{\raisebox{1mm}{\includegraphics[width=0.32cm]{figures/logo-orcid.eps}}}
+% Define link and button for each author
+\foreach \x in {A, ..., Z}{%
+\expandafter\xdef\csname orcid\x\endcsname{\noexpand\href{https://orcid.org/\csname orcidauthor\x\endcsname}{\noexpand\orcidicon}}
+}
+% Define the ORCID iD command for each author separately.
+\newcommand{\orcidauthorA}{0000-0002-4137-5605}
+
+% *** MISC UTILITY PACKAGES ***
+%
+%\usepackage{ifpdf}
+% Heiko Oberdiek's ifpdf.sty is very useful if you need conditional
+% compilation based on whether the output is pdf or dvi.
+% usage:
+% \ifpdf
+%   % pdf code
+% \else
+%   % dvi code
+% \fi
+% The latest version of ifpdf.sty can be obtained from:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/oberdiek/
+% Also, note that IEEEtran.cls V1.7 and later provides a builtin
+% \ifCLASSINFOpdf conditional that works the same way.
+% When switching from latex to pdflatex and vice-versa, the compiler may
+% have to be run twice to clear warning/error messages.
+
+% *** CITATION PACKAGES ***
+%
+\usepackage{cite}
+% cite.sty was written by Donald Arseneau
+% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
+% \cite{} output to follow that of IEEE. Loading the cite package will
+% result in citation numbers being automatically sorted and properly
+% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
+% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
+% \cite will automatically add leading space, if needed. Use cite.sty's
+% noadjust option (cite.sty V3.8 and later) if you want to turn this off
+% such as if a citation ever needs to be enclosed in parenthesis.
+% cite.sty is already installed on most LaTeX systems. Be sure and use
+% version 5.0 (2009-03-20) and later if using hyperref.sty.
+% The latest version can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/cite/
+% The documentation is contained in the cite.sty file itself.
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+\ifCLASSINFOpdf
+%   \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+% graphicx was written by David Carlisle and Sebastian Rahtz. It is
+% required if you want graphics, photos, etc. graphicx.sty is already
+% installed on most LaTeX systems. The latest version and documentation
+% can be obtained at: 
+% http://www.ctan.org/tex-archive/macros/latex/required/graphics/
+% Another good source of documentation is "Using Imported Graphics in
+% LaTeX2e" by Keith Reckdahl which can be found at:
+% http://www.ctan.org/tex-archive/info/epslatex/
+%
+% latex, and pdflatex in dvi mode, support graphics in encapsulated
+% postscript (.eps) format. pdflatex in pdf mode supports graphics
+% in .pdf, .jpeg, .png and .mps (metapost) formats. Users should ensure
+% that all non-photo figures use a vector format (.eps, .pdf, .mps) and
+% not a bitmapped formats (.jpeg, .png). IEEE frowns on bitmapped formats
+% which can result in "jaggedy"/blurry rendering of lines and letters as
+% well as large increases in file sizes.
+%
+% You can find documentation about the pdfTeX application at:
+% http://www.tug.org/applications/pdftex
+
+% *** MATH PACKAGES ***
+%
+\usepackage[cmex10]{amsmath}
+% A popular package from the American Mathematical Society that provides
+% many useful and powerful commands for dealing with mathematics. If using
+% it, be sure to load this package with the cmex10 option to ensure that
+% only type 1 fonts will utilized at all point sizes. Without this option,
+% it is possible that some math symbols, particularly those within
+% footnotes, will be rendered in bitmap form which will result in a
+% document that can not be IEEE Xplore compliant!
+%
+% Also, note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+%\interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/required/amslatex/math/
+\usepackage{amsfonts}
+\usepackage{amsbsy}
+
+% Used for KL-divergence
+\usepackage{mathtools}
+
+\DeclarePairedDelimiterX{\infdivx}[2]{(}{)}{%
+  #1\;\delimsize\|\;#2%
+}
+\newcommand{\infdiv}{D\infdivx}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+
+% *** SPECIALIZED LIST PACKAGES ***
+%
+%\usepackage{algorithmic}
+% algorithmic.sty was written by Peter Williams and Rogerio Brito.
+% This package provides an algorithmic environment fo describing algorithms.
+% You can use the algorithmic environment in-text or within a figure
+% environment to provide for a floating algorithm. Do NOT use the algorithm
+% floating environment provided by algorithm.sty (by the same authors) or
+% algorithm2e.sty (by Christophe Fiorio) as IEEE does not use dedicated
+% algorithm float types and packages that provide these will not provide
+% correct IEEE style captions. The latest version and documentation of
+% algorithmic.sty can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithms/
+% There is also a support site at:
+% http://algorithms.berlios.de/index.html
+% Also of interest may be the (relatively newer and more customizable)
+% algorithmicx.sty package by Szasz Janos:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/algorithmicx/
+
+% *** ALIGNMENT PACKAGES ***
+%
+%\usepackage{array}
+% Frank Mittelbach's and David Carlisle's array.sty patches and improves
+% the standard LaTeX2e array and tabular environments to provide better
+% appearance and additional user controls. As the default LaTeX2e table
+% generation code is lacking to the point of almost being broken with
+% respect to the quality of the end results, all users are strongly
+% advised to use an enhanced (at the very least that provided by array.sty)
+% set of table tools. array.sty is already installed on most systems. The
+% latest version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/required/tools/
+
+
+% IEEEtran contains the IEEEeqnarray family of commands that can be used to
+% generate multiline equations as well as matrices, tables, etc., of high
+% quality.
+
+% *** SUBFIGURE PACKAGES ***
+%\ifCLASSOPTIONcompsoc
+%  \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+%\else
+%  \usepackage[caption=false,font=footnotesize]{subfig}
+%\fi
+% subfig.sty, written by Steven Douglas Cochran, is the modern replacement
+% for subfigure.sty, the latter of which is no longer maintained and is
+% incompatible with some LaTeX packages including fixltx2e. However,
+% subfig.sty requires and automatically loads Axel Sommerfeldt's caption.sty
+% which will override IEEEtran.cls' handling of captions and this will result
+% in non-IEEE style figure/table captions. To prevent this problem, be sure
+% and invoke subfig.sty's "caption=false" package option (available since
+% subfig.sty version 1.3, 2005/06/28) as this is will preserve IEEEtran.cls
+% handling of captions.
+% Note that the Computer Society format requires a larger sans serif font
+% than the serif footnote size font used in traditional IEEE formatting
+% and thus the need to invoke different subfig.sty package options depending
+% on whether compsoc mode has been enabled.
+%
+% The latest version and documentation of subfig.sty can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/subfig/
+
+% *** FLOAT PACKAGES ***
+%
+%\usepackage{fixltx2e}
+% fixltx2e, the successor to the earlier fix2col.sty, was written by
+% Frank Mittelbach and David Carlisle. This package corrects a few problems
+% in the LaTeX2e kernel, the most notable of which is that in current
+% LaTeX2e releases, the ordering of single and double column floats is not
+% guaranteed to be preserved. Thus, an unpatched LaTeX2e can allow a
+% single column figure to be placed prior to an earlier double column
+% figure. The latest version and documentation can be found at:
+% http://www.ctan.org/tex-archive/macros/latex/base/
+
+%\usepackage{stfloats}
+% stfloats.sty was written by Sigitas Tolusis. This package gives LaTeX2e
+% the ability to do double column floats at the bottom of the page as well
+% as the top. (e.g., "\begin{figure*}[!b]" is not normally possible in
+% LaTeX2e). It also provides a command:
+%\fnbelowfloat
+% to enable the placement of footnotes below bottom floats (the standard
+% LaTeX2e kernel puts them above bottom floats). This is an invasive package
+% which rewrites many portions of the LaTeX2e float routines. It may not work
+% with other packages that modify the LaTeX2e float routines. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/sttools/
+% Do not use the stfloats baselinefloat ability as IEEE does not allow
+% \baselineskip to stretch. Authors submitting work to the IEEE should note
+% that IEEE rarely uses double column equations and that authors should try
+% to avoid such use. Do not be tempted to use the cuted.sty or midfloat.sty
+% packages (also by Sigitas Tolusis) as IEEE does not format its papers in
+% such ways.
+% Do not attempt to use stfloats with fixltx2e as they are incompatible.
+% Instead, use Morten Hogholm'a dblfloatfix which combines the features
+% of both fixltx2e and stfloats:
+%
+% \usepackage{dblfloatfix}
+% The latest version can be found at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/dblfloatfix/
+
+%\ifCLASSOPTIONcaptionsoff
+%  \usepackage[nomarkers]{endfloat}
+% \let\MYoriglatexcaption\caption
+% \renewcommand{\caption}[2][\relax]{\MYoriglatexcaption[#2]{#2}}
+%\fi
+% endfloat.sty was written by James Darrell McCauley, Jeff Goldberg and 
+% Axel Sommerfeldt. This package may be useful when used in conjunction with 
+% IEEEtran.cls'  captionsoff option. Some IEEE journals/societies require that
+% submissions have lists of figures/tables at the end of the paper and that
+% figures/tables without any captions are placed on a page by themselves at
+% the end of the document. If needed, the draftcls IEEEtran class option or
+% \CLASSINPUTbaselinestretch interface can be used to increase the line
+% spacing as well. Be sure and use the nomarkers option of endfloat to
+% prevent endfloat from "marking" where the figures would have been placed
+% in the text. The two hack lines of code above are a slight modification of
+% that suggested by in the endfloat docs (section 8.4.1) to ensure that
+% the full captions always appear in the list of figures/tables - even if
+% the user used the short optional argument of \caption[]{}.
+% IEEE papers do not typically make use of \caption[]'s optional argument,
+% so this should not be an issue. A similar trick can be used to disable
+% captions of packages such as subfig.sty that lack options to turn off
+% the subcaptions:
+% For subfig.sty:
+% \let\MYorigsubfloat\subfloat
+% \renewcommand{\subfloat}[2][\relax]{\MYorigsubfloat[]{#2}}
+% However, the above trick will not work if both optional arguments of
+% the \subfloat command are used. Furthermore, there needs to be a
+% description of each subfigure *somewhere* and endfloat does not add
+% subfigure captions to its list of figures. Thus, the best approach is to
+% avoid the use of subfigure captions (many IEEE journals avoid them anyway)
+% and instead reference/explain all the subfigures within the main caption.
+% The latest version of endfloat.sty and its documentation can obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/endfloat/
+%
+% The IEEEtran \ifCLASSOPTIONcaptionsoff conditional can also be used
+% later in the document, say, to conditionally put the References on a 
+% page by themselves.
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+%
+%\usepackage{url}
+% url.sty was written by Donald Arseneau. It provides better support for
+% handling and breaking URLs. url.sty is already installed on most LaTeX
+% systems. The latest version and documentation can be obtained at:
+% http://www.ctan.org/tex-archive/macros/latex/contrib/url/
+% Basically, \url{my_url_here}.
+
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+% *** Do not use packages that alter fonts (such as pslatex).         ***
+% There should be no need to do such things with IEEEtran.cls V1.6 and later.
+% (Unless specifically asked to do so by the journal or conference you plan
+% to submit to, of course. )
+
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+\bstctlcite{IEEEexample:BSTcontrol}
+%
+% paper title
+% Titles are generally capitalized except for words such as a, an, and, as,
+% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually
+% not capitalized unless they are the first or last word of the title.
+% Linebreaks \\ can be used within to get better formatting as desired.
+% Do not put math or special symbols in the title.
+\title{Uncertainty-aware graph-based multimodal remote sensing classification}
+%
+%
+% author names and IEEE memberships
+% note positions of commas and nonbreaking spaces ( ~ ) LaTeX will not break
+% a structure at a ~ so this keeps an author's name from being broken across
+% two lines.
+% use \thanks{} to gain access to the first footnote area
+% a separate \thanks must be used for each paragraph as LaTeX2e's \thanks
+% was not built to handle multiple paragraphs
+%
+\author{Iain~Rolland\orcidA{},~\IEEEmembership{Student~Member,~IEEE}%
+\thanks{I. Rolland is with the Department
+of Engineering, University of Cambridge, Cambridge, CB2 1PZ United Kingdom e-mail: imr27@cam.ac.uk.}% <-this % stops a space
+\thanks{Manuscript received Month Date, Year; revised Month Date, Year.}}
+
+% note the % following the last \IEEEmembership and also \thanks - 
+% these prevent an unwanted space from occurring between the last author name
+% and the end of the author line. i.e., if you had this:
+% 
+% \author{....lastname \thanks{...} \thanks{...} }
+%                     ^------------^------------^----Do not want these spaces!
+%
+% a space would be appended to the last name and could cause every name on that
+% line to be shifted left slightly. This is one of those "LaTeX things". For
+% instance, "\textbf{A} \textbf{B}" will typeset as "A B" not "AB". To get
+% "AB" then you have to do: "\textbf{A}\textbf{B}"
+% \thanks is no different in this regard, so shield the last } of each \thanks
+% that ends a line with a % and do not let a space in before the next \thanks.
+% Spaces after \IEEEmembership other than the last one are OK (and needed) as
+% you are supposed to have spaces between the names. For what it is worth,
+% this is a minor point as most people would not even notice if the said evil
+% space somehow managed to creep in.
+
+% The paper headers
+\markboth{Journal of X,~Vol.~Y, No.~Z, June~2021}%
+{}
+% The only time the second header will appear is for the odd numbered pages
+% after the title page when using the twoside option.
+% 
+% *** Note that you probably will NOT want to include the author's ***
+% *** name in the headers of peer review papers.                   ***
+% You can use \ifCLASSOPTIONpeerreview for conditional compilation here if
+% you desire.
+
+% If you want to put a publisher's ID mark on the page you can do it like
+% this:
+%\IEEEpubid{0000--0000/00\$00.00~\copyright~2014 IEEE}
+% Remember, if you use this you must call \IEEEpubidadjcol in the second
+% column for its text to clear the IEEEpubid mark.
+
+% use for special paper notices
+%\IEEEspecialpapernotice{(Invited Paper)}
+
+% make the title area
+\maketitle
+
+% As a general rule, do not put math, special symbols or citations
+% in the abstract or keywords.
+\begin{abstract}
+TBW.
+\end{abstract}
+
+% Note that keywords are not normally used for peerreview papers.
+\begin{IEEEkeywords}
+TBW.
+\end{IEEEkeywords}
+
+% For peer review papers, you can put extra information on the cover
+% page as needed:
+% \ifCLASSOPTIONpeerreview
+% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
+% \fi
+%
+% For peerreview papers, this IEEEtran command inserts a page break and
+% creates the second title. It will be ignored for other modes.
+\IEEEpeerreviewmaketitle
+
+\section{Introduction}
+% The very first letter is a 2 line initial drop letter followed
+% by the rest of the first word in caps.
+% 
+% form to use if the first word consists of a single letter:
+% \IEEEPARstart{A}{demo} file is ....
+% 
+% form to use if you need the single drop letter followed by
+% normal text (unknown if ever used by IEEE):
+% \IEEEPARstart{A}{}demo file is ....
+% 
+% Some journals put the first two words in caps:
+% \IEEEPARstart{T}{his demo} file is ....
+% 
+% Here we have the typical use of a "T" for an initial drop letter
+% and "HIS" in caps to complete the first word.
+\IEEEPARstart{T}{he} capability of algorithms to provide accurate measures of confidence and uncertainty is important if they are to be adopted in real-world scenarios where the stakes can be high \cite{Goodman_Flaxman_2017}. Although deep learning methods have provided new state of the art performance on many computer vision tasks \cite{lecun2015deeplearning}, and in many remote sensing tasks \cite{zhang2016deep}, they are often criticised for their lack of explainability \cite{pmlr_v70_guo17a} acting like a black box. Prediction transparency could be improved if models were able express when results can be given with confidence.
+
+The remainder of this paper is organised as follows: Section \ref{sec::related_work} contains a summary of related research into uncertainty-aware remote sensing classification methods, Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::networks} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarises and draws conclusions as well as suggests areas for future work.
+
+
+% needed in second column of first page if using \IEEEpubid
+%\IEEEpubidadjcol
+
+
+% An example of a floating figure using the graphicx package.
+% Note that \label must occur AFTER (or within) \caption.
+% For figures, \caption should occur after the \includegraphics.
+% Note that IEEEtran v1.7 and later has special internal code that
+% is designed to preserve the operation of \label within \caption
+% even when the captionsoff option is in effect. However, because
+% of issues like this, it may be the safest practice to put all your
+% \label just after \caption rather than within \caption{}.
+%
+% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
+% option should be used if it is desired that the figures are to be
+% displayed while in draft mode.
+%
+%\begin{figure}[!t]
+%\centering
+%\includegraphics[width=2.5in]{myfigure}
+% where an .eps filename suffix will be assumed under latex, 
+% and a .pdf suffix will be assumed for pdflatex; or what has been declared
+% via \DeclareGraphicsExtensions.
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure}
+
+% Note that IEEE typically puts floats only at the top, even when this
+% results in a large percentage of a column being occupied by floats.
+
+
+% An example of a double column floating figure using two subfigures.
+% (The subfig.sty package must be loaded for this to work.)
+% The subfigure \label commands are set within each subfloat command,
+% and the \label for the overall figure must come after \caption.
+% \hfil is used as a separator to get equal spacing.
+% Watch out that the combined width of all the subfigures on a 
+% line do not exceed the text width or a line break will occur.
+%
+%\begin{figure*}[!t]
+%\centering
+%\subfloat[Case I]{\includegraphics[width=2.5in]{box}%
+%\label{fig_first_case}}
+%\hfil
+%\subfloat[Case II]{\includegraphics[width=2.5in]{box}%
+%\label{fig_second_case}}
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure*}
+%
+% Note that often IEEE papers with subfigures do not employ subfigure
+% captions (using the optional argument to \subfloat[]), but instead will
+% reference/describe all of them (a), (b), etc., within the main caption.
+% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure
+% labels, the optional argument to \subfloat must be present. If a
+% subcaption is not desired, just leave its contents blank,
+% e.g., \subfloat[].
+
+
+% An example of a floating table. Note that, for IEEE style tables, the
+% \caption command should come BEFORE the table and, given that table
+% captions serve much like titles, are usually capitalized except for words
+% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to
+% and up, which are usually not capitalized unless they are the first or
+% last word of the caption. Table text will default to \footnotesize as
+% IEEE normally uses this smaller font for tables.
+% The \label must come after \caption as always.
+%
+% \begin{table}[!t]
+% % increase table row spacing, adjust to taste
+% \renewcommand{\arraystretch}{1.3}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+% \caption{An Example of a Table}
+% \label{table_example}
+% \centering
+% % Some packages, such as MDW tools, offer better commands for making tables
+% % than the plain LaTeX2e tabular which is used here.
+% \begin{tabular}{|c||c|}
+% \hline
+% One & Two\\
+% \hline
+% Three & Four\\
+% \hline
+% \end{tabular}
+% \end{table}
+
+
+% Note that the IEEE does not put floats in the very first column
+% - or typically anywhere on the first page for that matter. Also,
+% in-text middle ("here") positioning is typically not used, but it
+% is allowed and encouraged for Computer Society conferences (but
+% not Computer Society journals). Most IEEE journals/conferences use
+% top floats exclusively. 
+% Note that, LaTeX2e, unlike IEEE journals/conferences, places
+% footnotes above bottom floats. This can be corrected via the
+% \fnbelowfloat command of the stfloats package.
+\section{Related work}
+\label{sec::related_work}
+TBW.
+\section{Uncertainty framework}
+\label{sec::unc_framework}
+
+\subsection{Subjective Logic}
+In order to understand the mapping between Dirichlet distributions and uncertainty estimates, it is first necessary to describe the Subjective Logic (SL) framework. The uncertainty reasoning described by SL takes an evidence-based approach to decision making \cite{DBLP:books/sp/Josang16}. Expressing an opinion using measured quantities of belief allows the distinction to be made between uncertainty due to a lack of evidence (vacuity) or uncertainty due to the presence of conflicting evidence (dissonance). A multinomial opinion, $\omega$, can be expressed as $\omega=\left(\mathbf{b}, u, \mathbf{a}\right)$, where $\mathbf{b}$ is a belief mass vector, the scalar $u$ is the uncertainty mass and $\mathbf{a}$ is the base rate vector. For an output, $\mathbf{y}$, of dimension K
+\begin{equation}
+    \mathbf{b}\in\mathbb{R}^K,\quad\mathbf{a}\in\mathbb{R}^K,\quad\mathbf{y}\in\mathbb{R}^K.
+\end{equation}
+A projection of $\omega$ onto a probability distribution can be made according to
+\begin{equation}
+    P(y=k) = b_k + a_ku.
+\label{eq:prob_projection}
+\end{equation}
+Given that for the base rate vector $\sum_{k=1}^Ka_k=1$, an additivity requirement is described by
+\begin{equation}
+    u+\sum_{k=1}^K b_k=1.
+\end{equation}
+
+\subsection{Dirichlet mapping}
+If $\mathbf{p}$ is a K-dimensional random vector containing the probability of belonging to each output class, and $\boldsymbol{\alpha}$ is the strength vector which parameterizes the Dirichlet distribution, the probability density function of the Dirichlet is given by
+\begin{equation}
+    \textrm{Dir}(\mathbf{p}|\boldsymbol{\alpha})= \frac{\Gamma(\sum_{k=1}^K\alpha_k)}{\prod_{k=1}\alpha_k}\prod_{k=1}^Kp_k^{\alpha_k-1},
+\end{equation}
+where $\Gamma()$ is the gamma function. The distribution's expected value is given by
+\begin{equation}
+    \mathbb{E}\left[\textrm{Dir}(p_k\vert\boldsymbol{\alpha})\right]=\frac{\alpha_k}{\sum_{k=1}^K\alpha_k}.
+\label{eq:expected_dir}
+\end{equation}
+If we allow the uncertainty mass and base rates to be given by
+\begin{equation}
+    u=\frac{K}{\sum_{k=1}^K\alpha_k}=\frac{K}{S}
+\end{equation}
+and
+\begin{equation}
+    a_k=1/K, \forall k
+\end{equation}
+respectively, where $S$ refers to the Dirichlet strength, then by equating the probability projection of (\ref{eq:prob_projection}) with the expected value of the Dirichlet distribution given by (\ref{eq:expected_dir}), the expression for the belief mass can be obtained as
+\begin{equation}
+    b_k = \frac{\alpha_k-1}{S},
+\end{equation}
+which completes the mapping from Dirichlet distribution to SL opinion.
+\subsection{Uncertainty measures}
+From the definitions of the evidential uncertainties presented in \cite{8455454}, the measures of vacuity and dissonance have been adopted. The measure of vacuity uncertainty is simply given by the uncertainty mass, i.e.
+\begin{equation}
+    vac(\omega)\equiv u = \frac{K}{S},
+\label{eq::vacuity}
+\end{equation}
+and the measure of dissonance uncertainty is given by
+\begin{equation}
+    diss(\omega)=\sum_{i=1}^K\left(\frac{b_i\sum_{j\neq i}b_j\textrm{Bal}(b_j,b_i)}{\sum_{j\neq i}b_j}\right),
+\end{equation}
+where $\textrm{Bal}()$ is a function which gives the relative balance between two belief masses, defined by
+\begin{equation}
+    \textrm{Bal}(b_j,b_i)=\begin{cases}1-\frac{\vert b_i-b_j\vert}{b_i+b_j},&\text{if } b_i+b_j\neq0,\\
+    0,&\text{otherwise.}\end{cases}
+\end{equation}
+
+In order assess the relative ability of evidential uncertainties to express different types of doubt, three commonly used probabilistic measures of uncertainty (aleatoric, epistemic and entropy) are computed to provide comparisons. For a Bayesian model with inputs, outputs and parameters denoted $x$, $y$ and $\boldsymbol{\theta}$ respectively, the posterior which will be approximated is $p(\boldsymbol{\theta}\vert\mathcal{D})$, where $\mathcal{D}$ is the observed dataset. The total entropy, made up of both aleatoric and epistemic uncertainty \cite{pmlr_v80_depeweg18a} is given by
+\begin{equation}
+    \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right),
+\end{equation}
+where $\mathcal{H}()$ computes the differential entropy of a distribution. Aleatoric uncertainty, which accounts for noise inherent to the data observations and cannot be reduced with extra samples \cite{NIPS2017_2650d608}, is given by
+\begin{equation}
+        \mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right].
+\end{equation}
+The epistemic uncertainty, therefore, is given by the difference between these two quantities
+\begin{equation}
+        \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right)-\mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right].
+\label{eq::epistemic}
+\end{equation}
+In order to compute the above expressions for aleatoric and epistemic uncertainty, the posterior distribution over models is approximated by samples obtained using dropout inference \cite{pmlr_v48_gal16} as is described in Section \ref{sec::dropout_bayesian}.
+
+\section{Networks}
+\label{sec::networks}
+\subsection{Graph convolutional networks}
+The problem involves a graph with $N$ nodes described by an adjacency matrix $\mathbf{A}\in\mathbb{R}^{N\times N}$ and node features $\mathbf{X}\in\mathbb{R}^{N\times C}$, where $C$ denotes the number of channels in the input which describes each node. The graph's degree matrix, $\mathbf{D}\in\mathbb{R}^{N\times N}$, is a diagonal matrix with elements given by $\mathbf{D}_{ii}=\sum_j\mathbf{A}_{ij} $. For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
+Using the first-order approximation to spectral graph convolution derived by \cite{KipfW17}, the graph convolutional layer is given by
+\begin{equation}
+    \mathbf{Z}^{(l+1)}=\sigma\left(\tilde{\mathbf{D}}^{-\frac{1}{2}}\tilde{\mathbf{A}}\tilde{\mathbf{D}}^{-\frac{1}{2}}\mathbf{Z}^{(l)}\boldsymbol{W}^{(l)}\right),
+\label{eq::gcn_layer}
+\end{equation}
+where $\mathbf{Z}^{(l)}$, $\mathbf{Z}^{(l+1)}$ and $\boldsymbol{W}^{(l)}$ are the inputs, outputs and weights of the $\textrm{l}^\textrm{th}$ layer respectively, and $\sigma()$ is a non-linear activation function. For the first layer, the weights are $\boldsymbol{W}^{(0)}\in\mathbb{R}^{C\times F}$ and $\mathbf{Z}^{(0)} = \mathbf{X}\in\mathbb{R}^{N\times C}$ where $F$ is the number of features in the layer's output (a hyperparameter of the layer).
+Models referred to as graph convolutional networks (GCNs) from henceforth will refer to a model which consists of two of these layers used in sequence, the first using the rectified linear unit (ReLU) activation function, the second using a softmax activation.
+\subsection{Subjective models}
+In order to obtain models which will give node-level Dirichlet distribution parameters, the softmax output activation function used in a GCN is substituted for a ReLU function. In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the K-dimensional concentration parameters of the $\text{i}^\text{th}$ node. In order to train an evidential model, the loss function is made up of two components; a squared error term which is minimised in order to classify a greater proportion of the nodes correctly and a variance term which is minimized to incentivize the model to provide confident predictions where possible. This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
+\begin{equation}
+\begin{split}
+    \mathcal{L}(\boldsymbol{\theta})&=\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\text{Var}(p_{ik})\right],\\
+    &=\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\frac{\left(\frac{\alpha_{ik}}{S_i}\right)\left(1-\frac{\alpha_{ik}}{S_i}\right)}{S_i-K}\right],
+\end{split}
+\label{eq:core_loss}
+\end{equation}
+where $i\in\mathbb{L}$ refers to the fact that the loss is computed using a sum only over nodes in the training set, $\mathbb{L}$. Models trained with such an output activation and loss function will be denoted using the `S-' prefix in order to indicate they provide subjective predictions, e.g. S-GCN.
+\subsection{Dropout inference as a Bayesian approximation}
+\label{sec::dropout_bayesian}
+It has been shown that a model with dropout can be considered to represent the posterior distribution over models \cite{pmlr_v48_gal16}. The dropouts are used to represent stochasticity in the model parameters \cite{C9SC01992H}. A given combination of dropouts can be considered to represent a model sampled from the approximate posterior, $q(\boldsymbol{\theta})$, with the actual posterior distribution of models being $p(\boldsymbol{\theta}|\mathcal{D})$. Monte Carlo sampling can be used to approximately compute quantities such as the term $\mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]$ in (\ref{eq::epistemic}) allowing the aleatoric and epistemic uncertainty to be calculated. This can be done using the approximation 
+\begin{equation}
+    \mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]\approx\frac{1}{M}\sum_{m=1}^M \mathcal{H}\left(p(y\vert x; \boldsymbol{\theta}^m)\right),
+\end{equation}
+where $\boldsymbol{\theta}^m\sim q(\boldsymbol{\theta})$ is a model sampled by performing dropout inference. When this technique has been used, the model name represents this using a `B' in its name, e.g. S-BGCN, showing that this Bayesian approximation has been used. The Drop-GCN model, which is used for benchmarking the subjective methods, refers to the same technique when applied to a `vanilla' GCN. 
+
+\subsection{Convergence assistance techniques}
+In order to assist the convergence of subjective models, two additional assistance techniques have been used: teacher knowledge distillation and the use of a Dirichlet prior. These methods have been shown to allow subjective models to provide better uncertainty estimates \cite{Zhao2020}.
+\subsubsection{Teacher knowledge distillation}
+By training a non-subjective model in advance, its outputs, $\hat{p}_{ik}$, can be used in order to encourage the subjective model to converge to node Dirichlet distributions with $\mathbb{E}[p_{ik}]$ which are close to the teacher's deterministic estimates. This is achieved using an additional term in the loss function,
+\begin{equation}
+    \mathcal{L}_{\text{``-T''}}(\boldsymbol{\theta})=\sum_i\sum_k\left(\hat{p}_{ik}\log\frac{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}\right),
+\end{equation}
+which corresponds to the summation of KL-divergence terms between the teacher output probability and the expected value of the subjective model's Dirichlet distribution for each node, $\sum_i\infdiv{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}$. Notice that this sum is computed over all nodes as opposed to just the nodes in $\mathbb{L}$. Models trained using a teacher are denoted using the ``-T'' suffix e.g. a S-BGCN-T model would indicate that a pre-trained GCN was used as a teacher in order to assist the training convergence of a subjective graph convolutional model.
+\subsubsection{Dirichlet prior}
+A second convergence assistance technique which can be used involves the use of a Dirichlet prior, $\hat{\boldsymbol{\alpha}}$. The exact method chosen to provide $\hat{\boldsymbol{\alpha}}$ will depend on the nature of the problem but we will assume nodes which are nearby in the graph are more likely to belong to the same output class than nodes which are far apart, a property known as homophily \cite{huang2021combining}. Using this assumption, we can use the computed distances on the graph in order to assign contributions of evidence from observed node labels to the other nodes in the graph using a function of our choosing. If $d_{ij}$ denotes the shortest path distance between a given node, indexed by $i$ and an observed node, indexed by $j$, then the amount of evidence contributed to suggest that the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class is given by
+\begin{equation}
+    h_{ik}(y_j,d_{ij})=
+    \begin{cases}
+    \frac{1}{\sqrt{2\pi\sigma^2}}\exp{\left(\frac{-d_{ij}^2}{2\sigma^2}\right)}, & \text{if } y_{jk}=1,\\
+    0, & \text{otherwise},
+    \end{cases}
+\end{equation}
+where $\sigma$ is a scale parameter which controls the order of distance magnitude over which evidence will propagate in the prior. The total evidence to suggest the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class, $e_{ik}$ can be found by summing these contributions over the nodes in the training set such that the element in the prior is given by 
+\begin{equation}
+    \hat{\boldsymbol{\alpha}}_{ik}=1+e_{ik}=1+\sum_{j\in\mathbb{L}}h_{ik}(y_j, d_{ij}).
+\end{equation}
+A node which is far from all observed nodes, i.e. $h_{ik}(y_j,d_{ij})\approx0, \forall j\in\mathbb{L}$, will mean that $\hat{\boldsymbol{\alpha}}_{i}\approx\mathbf{1}$. The prior's Dirichlet strength for the $\text{i}^\text{th}$ node, $\hat{S}_i$, will therefore be approximately $K$ and the node's vacuity, as given by (\ref{eq::vacuity}), will be approximately 1. On the other hand, a node which is near to many observed nodes will have large $\hat{S}_i$ and node vacuity will be small. The KL-divergence between the Dirichlet distribution of the prior and the model output can be incorporated into the loss function using the term
+\begin{equation}
+    \mathcal{L}_{\text{``-K''}}(\boldsymbol{\theta})=\sum_i\infdiv{\text{Dir}(\mathbf{p}_i\vert\boldsymbol{\alpha}_i)}{\text{Dir}(\hat{\mathbf{p}}_i\vert\hat{\boldsymbol{\alpha}}_i)},
+\label{eq::teacher_loss}
+\end{equation}
+which can be incorporated into the total loss. Models trained using a prior are denoted using the ``-K'' suffix e.g. a S-BGCN-K model would indicate that the graph convolutional network was trained with a loss function using a weighted combination of the loss in (\ref{eq:core_loss}) and the term described in (\ref{eq::teacher_loss}).
+
+Table \ref{loss_table} shows how these convergence assistance techniques can be weighted and combined in various permutations to provide a total loss function, $\mathcal{L}_\text{total}(\boldsymbol{\theta})$, as well as the model name abbreviations used to denote which combination has been used. The coefficients $\lambda_{\text{``-T''}}$ and $\lambda_{\text{``-K''}}$ are used to control the relative importance of the teacher network and the Dirichlet prior respectively against the importance of the subjective loss function given in (\ref{eq:core_loss}). These are considered hyperparameters of the model which are to be tuned during training.
+
+
+\begin{table}
+\renewcommand{\arraystretch}{1.5}
+\caption{Loss function components and their weighting coefficients for different model types}
+\label{loss_table}
+\centering
+\begin{tabular}{cc}
+\hline
+\bfseries Model name & \bfseries $\mathcal{L}_{\text{total}}(\boldsymbol{\theta})$\\
+\hline
+S-BGCN & $\mathcal{L}(\boldsymbol{\theta})$ \\
+S-BGCN-T & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-T''}}\mathcal{L}_{\text{``-T''}}(\boldsymbol{\theta})$ \\
+S-BGCN-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-K''}}\mathcal{L}_{\text{``-K''}}(\boldsymbol{\theta})$ \\
+S-BGCN-T-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-T''}}\mathcal{L}_{\text{``-T''}}(\boldsymbol{\theta})+\lambda_{\text{``-K''}}\mathcal{L}_{\text{``-K''}}(\boldsymbol{\theta})$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Results and Analysis}
+\label{sec::results}
+\subsection{Data}
+A subsection of the 2018 IEEE GRSS Data Fusion Challenge dataset was selected for the purposes of validating the described methods as a means for obtaining uncertainty aware classifications. The modes of data collected come from three sensor types: LiDAR, optical and hyperspectral (HS). The LiDAR data was provided at $0.5$ m resolution, the same resolution as the ground truth labels (GT). In order to simplify analysis, the optical data (which was provided at $0.05$ m resolution) and the HS data (which was provided at $1.0$ m resolution) were bilinearly resampled to obtain $0.5$ m resolution across inputs and outputs. 
+
+The graph was constructed with each $0.5$ m $\times$ $0.5$ m pixel representing a node in the graph. Each node has a 52-dimensional feature vector (produced by stacking 3 optical channels, 48 HS channels and 1 LiDAR channel) describing it. The graph edges are computed using a $k$-nearest neighbors algorithm with two nodes receiving an edge connecting them if either node was one of the $k$ nodes which were nearest the other. This produces a graph which is both undirected and unweighted. The graph, which contains approximately 2.16 million nodes, was computed with $k=15$.
+
+The ground truth labels describe 20 different urban land cover/land use classes as well as an unlabelled state, described as Unclassified. The exact types and abundances of these classes can be found in Table \ref{tab::classes}. The classes which do not appear in the subsection of the dataset but exist within the wider GT are included for completeness.
+
+\begin{table}
+% \renewcommand{\arraystretch}{1.5}
+\caption{Land cover/Land use classes in selected subsection of Houston dataset ground truth}
+\label{tab::classes}
+\centering
+\begin{tabular}{NNcZ}
+\hline
+\bfseries Class Value & \bfseries Legend Color & \bfseries Class Name & \bfseries Number of Nodes (total)\\
+\hline
+$0$ & \colorbox[rgb]{0.0,0.0,0.0}{\textcolor{white}{\phantom{A}}} & Unclassified & $1302595$\\
+$1$ & \colorbox[rgb]{0.0,1.0,0.03}{\textcolor{white}{\phantom{A}}} & Healthy grass & $10120$ \\
+$2$ & \colorbox[rgb]{0.21, 0.69, 0.15}{\textcolor{white}{\phantom{A}}} & Stressed grass & $16332$ \\
+$3$ & \colorbox[rgb]{0.53, 0.73, 0.57}{\textcolor{white}{\phantom{A}}} & Artificial turf & $0$ \\
+$4$ & \colorbox[rgb]{0.  , 0.47, 0.08}{\textcolor{white}{\phantom{A}}} & Evergreen trees & $38288$ \\
+$5$ & \colorbox[rgb]{0.  , 0.3 , 0.}{\textcolor{white}{\phantom{A}}} & Deciduous trees & $3082$ \\
+$6$ & \colorbox[rgb]{0.75, 0.48, 0.08}{\textcolor{white}{\phantom{A}}} & Bare earth & $0$ \\
+$7$ & \colorbox[rgb]{0.  , 0.89, 0.89}{\textcolor{white}{\phantom{A}}} & Water & $332$ \\
+$8$ & \colorbox[rgb]{0.98, 0.98, 0.98}{\textcolor{white}{\phantom{A}}} & Residential buildings & $12417$ \\
+$9$ & \colorbox[rgb]{0.94, 0.76, 0.92}{\textcolor{white}{\phantom{A}}} & Non-residential buildings & $587141$ \\
+$10$ & \colorbox[rgb]{1.  , 0.35, 0.36}{\textcolor{white}{\phantom{A}}} & Roads & $68831$ \\
+$11$ & \colorbox[rgb]{0.64, 0.64, 0.64}{\textcolor{white}{\phantom{A}}} & Sidewalks & $96020$ \\
+$12$ & \colorbox[rgb]{0.36, 0.36, 0.36}{\textcolor{white}{\phantom{A}}} & Crosswalks & $3584$ \\
+$13$ & \colorbox[rgb]{0.79, 0.  , 0.01}{\textcolor{white}{\phantom{A}}} & Major thoroughfares & $17181$ \\
+$14$ & \colorbox[rgb]{0.54, 0.  , 0.04}{\textcolor{white}{\phantom{A}}} & Highways & $0$ \\
+$15$ & \colorbox[rgb]{1.  , 0.65, 0.07}{\textcolor{white}{\phantom{A}}} & Railways & $0$ \\
+$16$ & \colorbox[rgb]{1.,1.,0.}{\textcolor{white}{\phantom{A}}} & Paved parking lots & $7677$ \\
+$17$ & \colorbox[rgb]{0.92, 0.44, 0.}{\textcolor{white}{\phantom{A}}} & Unpaved parking lots & $0$ \\
+$18$ & \colorbox[rgb]{0.98, 0.  , 1.}{\textcolor{white}{\phantom{A}}} & Cars & $0$ \\
+$19$ & \colorbox[rgb]{0.  , 0.  , 1.}{\textcolor{white}{\phantom{A}}} & Trains & $0$ \\
+$20$ & \colorbox[rgb]{0.49, 0.76, 0.8}{\textcolor{white}{\phantom{A}}} & Stadium seats & $0$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/gt.jpg}
+\caption{Ground truth data with colors depicting classes as defined in Table \ref{tab::classes}. The subset area of the 2018 IEEE GRSS Data Fusion Challenge dataset covers the region with lower-left coordinate 272956, 3289689 and upper-right coordinate 273856, 3290290 (coordinates given in the NAD83 / UTM zone 15N Coordinate Reference System).}
+\label{fig::gt}
+\end{figure}
+
+In order to divide the annotations into a training, a validation and a test set, any adjacent pixels with the same label were considered part of one contiguous label block. Before randomly allocating these contiguous label blocks into the different sets, the blocks were separated along grid lines in order to prevent any particularly large contiguous blocks from skewing its set into having an over-representation of that class (see Figure \ref{fig::dataset_split} for a visual depiction of a random split). The set of contiguous blocks obtained after splitting along these arbitrary grid lines were then randomly allocated into training, validation and test sets with proportions of 40\%, 30\% and 30\% respectively. This method of assigning contiguous blocks into a split together as opposed to randomly splitting pixels was done so as to reduce the number of strongly correlated samples (due to local spatial correlations in the input vectors) across the test/validation/test sets which would come with having pixels of immediate proximity split into different sets.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/dataset_split.jpg}
+\caption{RGB data channels with overlaying colors used to depict a random dataset split with the red, green and blue overlay colors representing training, validation and test set pixels respectively.}
+\label{fig::dataset_split}
+\end{figure}
+
+\subsection{Network training and hyperparameters}
+Models were implemented and trained using the TensorFlow library \cite{tensorflow2015_whitepaper}. In order to handle the imbalance of classes in the dataset, sample weighting was used. Samples were given weights which were inversely proportional to the number of total samples of each class in the training set. These weights were used when computing the loss during training such that the loss related to nodes belonging to under-represented classes were given an increased influence over parameter updates and vice versa.
+
+All GCN-based models were constructed using a dropout layer (dropout probability $0.5$), a graph convolutional layer, as described in (\ref{eq::gcn_layer}), a second dropout layer (dropout probability $0.5$) and a second graph convolutional layer with the relevant output activation function. The kernel weights of the first graph convolutional layer were regularized using an $L_2$ penalization. Where dropout inference has been used, the number of samples taken, $M$, was 100. 
+
+Hyperparameters including the learning rate, the $L_2$ regularization coefficient and the number of GCN layer output features, $F$, were selected via a grid-search method. Where used, $\lambda_{\text{``-T''}}$ and $\lambda_{\text{``-K''}}$ were also found using a grid-search.
+
+Learning was performed for a maximum of 400 epochs, but was stopped early if the validation loss failed to decrease further for 60 consecutive epochs. If stopped early, model weights were returned to the settings which provided the lowest validation set loss upon the termination of training.
+    
+Each test was performed for different random dataset splits and model weight initializations in order to obtain mean and standard deviation measures of performance.
+
+Benchmark models presented include the `vanilla' GCN (which can provide uncertainty via entropy) and the Drop-GCN which is a GCN where dropout inference has been applied in order to produce estimates of aleatoric and epistemic uncertainty in addition to entropy.
+
+\subsection{Misclassification detection}
+
+Given that model uncertainties should provide a measure of the confidence which can be had about a model's predictions, a worthwhile estimate of uncertainty should be able to distinguish model misclassifications from accurate classifications. In order to measure a uncertainty output's ability to separate misclassifications, an experiment which produces a receiver operating characteristic (ROC) curve can be performed. By plotting the true positive rate (the proportion of misclassified nodes correctly flagged as misclassifications) against the false positive rate (the proportion of correctly classified nodes which were incorrectly flagged as misclassified) for various threshold values of the uncertainty metric, the ROC curve can be used to illustrate how well the uncertainty metric can separate the model's misclassifications. The area under the ROC curve (AUROC) can be used as a single numerical representation of the ROC figure, where a perfect discriminator would have an AUROC of $1.0$. An alternative measure of how well the uncertainty metric separates misclassified nodes is provided by considering the precision-recall (PR) curve, which plots the proportion of nodes which were detected as misclassifications which were actually misclassified nodes (precision) against the proportion of actually misclassified nodes which were detected as misclassifications (recall). Again, the area under the PR curve (AUPR) can be used as a single numerical summary of this relationship, and a perfect discriminator would have an AUPR of $1.0$.
+
+Models of each type described (as well as benchmark models) were trained and their outputs analysed in order to assess which model types as well as which of their uncertainty measures were best able to distinguish misclassified nodes. This was done by comparing the output labels for the test nodes to the respective test nodes' GT labels in order to separate correctly and incorrectly classified nodes. Each uncertainty metric in turn was then used to measure ROC and PR curve values for various threshold uncertainty metric values and the area under these curves subsequently calculated.
+
+The AUROC and AUPR values measured for the task of misclassification detection can be seen in Table \ref{tab::misc_auroc} and Table \ref{tab::misc_aupr} respectively.
+
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by the AUROC metric).}
+\label{tab::misc_auroc}
+\small
+\begin{center}
+\begin{tabular}{Lccccc}
+\hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}             \\
+      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) & $0.676$ & $0.801$ &$0.792$&$0.509$&$0.798$    \\
+S-BGCN-T-K (pixel prior) & $0.908$ & $0.840$ &$0.905$&$0.451$&$\mathbf{0.912}$ \\
+S-BGCN-T & $0.729$ & $0.834$ &$0.869$&$0.618$&$0.861$ \\ 
+S-BGCN & $0.760$ & $0.877$ &$0.894$&$0.623$&$0.886$ \\ 
+S-GCN & $0.729$ & $0.842$ &-&-&$0.859$ \\ 
+S-MLP &$0.845$&$0.904$&-&-&$0.909$ \\
+GCN & - & - &-&-&$0.887$ \\ 
+Drop-GCN & - & - &$0.897$&$0.552$&$0.887$ \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by the AUPR metric).}
+\label{tab::misc_aupr}
+\small
+\begin{center}
+\begin{tabular}{Lccccc}
+\hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
+      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) & $0.352$&$0.398$&$0.467$&$0.237$&$0.474$ \\
+S-BGCN-T-K (pixel prior) & $0.659$&$0.545$&$0.649$&$0.206$&$\mathbf{0.672}$ \\
+S-BGCN-T & $0.451$&$0.484$&$0.591$&$0.278$&$0.579$ \\ 
+S-BGCN & $0.489$ & $0.558$  &$0.633$&$0.268$&$0.616$ \\ 
+S-GCN & $0.472$ & $0.538$  &-&-&$0.595$ \\ 
+S-MLP & $0.417$&$0.566$&-&-&$0.616$ \\
+GCN & - & -  &-&-&$0.606$ \\ 
+Drop-GCN & - & -  & $0.619$&$0.243$&$0.600$ \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+The S-BGCN-T-K model trained using the pixel prior achieves the highest ranked misclassification detection performance, with the uncertainty measured by entropy providing the best distinguishing metric, with AUROC and AUPR of $0.912$ and $0.672$ respectively, closely followed by the performance achieved by the measures of vacuity (AUROC and AUPR of $0.908$ and $0.659$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.905$ and $0.649$ respectively). The performance seen for the S-BGCN-T-K model trained using the superpixel prior is markedly lower, with its best-detecting uncertainty metrics (dissonance and aleatoric uncertainty) not exceeding AUROC and AUPR of $0.801$ and $0.467$ respectively. 
+
+\subsection{Out of distribution detection}
+
+A lack of confidence held about the model's prediction might also arise if it receives an input which belongs to a distribution other than the distributions seen during training. The relative inability of neural networks' to successfully extrapolate beyond the support of the training data is a well-known weakness of these methods \cite{NIPS2017_9ef2ed4b}. By training models using only a subset of the classes provided by the GT, with the other classes acting as out of distribution (OOD) samples, an analysis of whether the uncertainty metrics are capable of distinguishing OOD nodes can be performed. Using the same approach as described for misclassification detection, the AUROC and AUPR can be calculated for each uncertainty output provided by each model type, in order to determine the relative performance of the respective metrics for this task.
+
+In the results presented, two classes were randomly selected to act as OOD. This was repeated 10 times, with two new randomly sampled classes selected for each training and evaluation loop in order that the variation in OOD detection performance due to the nature of the classes selected as OOD could be averaged out and the mean and standard deviation of performance presented. Each model type was assessed over the same 10 sampled OOD class pairs for fairness. The AUROC and AUPR values measured can be found in Table \ref{tab::ood_auroc} and Table \ref{tab::ood_aupr} respectively.
+
+\begin{table*}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{OOD detection: Ability of each uncertainty type to detect OOD nodes (measured by the AUROC metric). Values shown represent the mean $\pm$ standard deviation.}
+\label{tab::ood_auroc}
+\small
+\begin{center}
+\begin{tabular}{Lccccc}
+\hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}             \\
+      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) & $0.839\pm0.092$ & $0.691\pm0.173$ &$0.831\pm0.079$&$0.268\pm0.180$&$0.833\pm0.076$    \\           
+S-BGCN-T-K (pixel prior) & $\mathbf{0.882\pm0.085}$ & $0.605\pm0.197$ &$0.877\pm0.089$&$0.193\pm0.107$&$0.878\pm0.089$    \\        
+S-BGCN-T & $0.588\pm0.147$ & $0.664\pm0.133$ &$0.593\pm0.188$&$0.396\pm0.096$&$0.578\pm0.186$    \\ 
+S-BGCN & $0.586\pm0.147$ & $0.666\pm0.132$ &$0.596\pm0.193$&$0.401\pm0.092$&$0.580\pm0.191$    \\ 
+S-GCN & $0.580\pm0.145$ & $0.650\pm0.120$ &-&-&$0.586\pm0.181$    \\ 
+S-MLP & $0.767\pm0.152$ & $0.805\pm0.114$ &-&-&$0.787\pm0.125$    \\   
+GCN & - & - &-&-&$0.538\pm0.188$    \\ 
+Drop-GCN & - & - &$0.541\pm0.185$&$0.420\pm0.161$&$0.538\pm0.187$    \\ \hline
+\end{tabular}
+\end{center}
+\end{table*}
+
+\begin{table*}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{OOD detection: Ability of each uncertainty type to detect OOD nodes (measured by the AUPR metric). Values shown represent the mean $\pm$ standard deviation.}
+\label{tab::ood_aupr}
+\small
+\begin{center}
+\begin{tabular}{Lccccc}
+\hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
+      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) &$0.234\pm0.252$&$0.142\pm0.185$&$0.214\pm0.249$&$0.099\pm0.227$&$0.212\pm0.251$    \\   
+S-BGCN-T-K (pixel prior) &$\mathbf{0.318\pm0.289}$&$0.132\pm0.184$&$0.316\pm0.306$&$0.082\pm0.178$&$0.316\pm0.306$    \\        
+S-BGCN-T &$0.128\pm0.187$&$0.137\pm0.192$&$0.148\pm0.211$&$0.095\pm0.193$&$0.143\pm0.208$    \\ 
+S-BGCN & $0.127\pm0.186$ & $0.139\pm0.190$  &$0.150\pm0.213$&$0.095\pm0.195$&$0.145\pm0.209$    \\ 
+S-GCN & $0.125\pm0.185$ & $0.130\pm0.191$  &-&-&$0.143\pm0.207$    \\ 
+S-MLP & $0.245\pm0.214$ & $0.233\pm0.170$ &-&-&$0.219\pm0.201$    \\   
+GCN & - & -  &-&-&$0.116\pm0.179$    \\ 
+Drop-GCN & - & -  & $0.116\pm0.179$&$0.115\pm0.257$&$0.116\pm0.179$    \\ \hline
+\end{tabular}
+\end{center}
+\end{table*}
+
+As for the task of misclassification detection, the S-BGCN-T-K model trained using the pixel prior is also the highest ranked model for the task of OOD detection. Its measure of vacuity uncertainty provided the best distinguishing metric, with mean AUROC and AUPR of $0.882$ and $0.318$ respectively, closely followed by performance from the measures of entropy (AUROC and AUPR of $0.878$ and $0.316$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.877$ and $0.316$ respectively). While competitive performance was observed across a number of the model types trained for the task of misclassification detection, in the task of OOD detection the performance of the S-BGCN-T-K model trained using the pixel prior stands out above others. This highlights the importance of describing a meaningful prior in advance for the purposes of achieving improved uncertainty estimates. While the S-BGCN-T-K model trained using the superpixel prior does not detect OOD nodes quite so successfully, it still seems to benefit from the use of the prior as it achieves next-best performance (with its measure of vacuity giving a mean AUROC and AUPR of $0.839$ and $0.234$ respectively), perhaps also alongside the S-MLP (with its measure of dissonance giving a mean AUROC and AUPR of $0.805$ and $0.233$ respectively).
+
+The fact that vacuity is the uncertainty measure which best distinguishes OOD nodes for either form of S-BGCN-T-K model reflects intuition. Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which vacuity is likely higher. 
+
+\section{Conclusion}
+\label{sec::conclusion}
+
+The misclassification and OOD detection performance of the S-BGCN-T-K presented represents a promising avenue for uncertainty-aware learning. The uncertainties which are produced by this model can be used to better distinguish misclassified nodes and OOD nodes than any of the other methods which are presented. Models which are capable of better quantifying confidence in this way are important for real-world applications where the consequences of misplaced model certainty can be high-stake. 
+
+The improved estimate of uncertainty obtained through the use of a prior is shown in the S-BGCN-T-K results, with equivalent models which do not use a prior, e.g. S-BGCN-T, producing uncertainty measures which cannot identify misclassified or OOD nodes as successfully. In order to distinguish misclassifications, the S-BGCN-T-K model measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance. For the task of identifying nodes which come from a distribution other than the distributions on which the model was trained, the measure of vacuity stands out as the uncertainty metric which does this most successfully.
+
+
+% if have a single appendix:
+%\appendix[Proof of the Zonklar Equations]
+% or
+%\appendix  % for no appendix heading
+% do not use \section anymore after \appendix, only \section*
+% is possibly needed
+
+% use appendices with more than one appendix
+% then use \section to start each appendix
+% you must declare a \section before using any
+% \subsection or using \label (\appendices by itself
+% starts a section numbered zero.)
+%
+
+% use section* for acknowledgment
+\section*{Acknowledgment}
+
+
+The authors would like to thank...
+
+
+% Can use something like this to put references on a page
+% by themselves when using endfloat and the captionsoff option.
+\ifCLASSOPTIONcaptionsoff
+  \newpage
+\fi
+
+
+
+% trigger a \newpage just before the given reference
+% number - used to balance the columns on the last page
+% adjust value as needed - may need to be readjusted if
+% the document is modified later
+%\IEEEtriggeratref{8}
+% The "triggered" command can be changed if desired:
+%\IEEEtriggercmd{\enlargethispage{-5in}}
+
+% references section
+
+% can use a bibliography generated by BibTeX as a .bbl file
+% BibTeX documentation can be easily obtained at:
+% http://www.ctan.org/tex-archive/biblio/bibtex/contrib/doc/
+% The IEEEtran BibTeX style support page is at:
+% http://www.michaelshell.org/tex/ieeetran/bibtex/
+\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+\bibliography{bibtex/bib/IEEEabrv, bibtex/bib/imrolland}
+%
+% <OR> manually copy in the resultant .bbl file
+% set second argument of \begin to the number of references
+% (used to reserve space for the reference number labels box)
+% \begin{thebibliography}{1}
+
+% \bibitem{IEEEhowto:kopka}
+% H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
+%   0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+
+% \end{thebibliography}
+
+% biography section
+% 
+% If you have an EPS/PDF photo (graphicx package needed) extra braces are
+% needed around the contents of the optional argument to biography to prevent
+% the LaTeX parser from getting confused when it sees the complicated
+% \includegraphics command within an optional argument. (You could create
+% your own custom macro containing the \includegraphics command to make things
+% simpler here.)
+%\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{mshell}}]{Michael Shell}
+% or if you just want to reserve a space for a photo:
+
+% \begin{IEEEbiography}{Michael Shell}
+% Biography text here.
+% \end{IEEEbiography}
+
+% % if you will not have a photo at all:
+% \begin{IEEEbiographynophoto}{John Doe}
+% Biography text here.
+% \end{IEEEbiographynophoto}
+
+% % insert where needed to balance the two columns on the last page with
+% % biographies
+% %\newpage
+
+% \begin{IEEEbiographynophoto}{Jane Doe}
+% Biography text here.
+% \end{IEEEbiographynophoto}
+
+% You can push biographies down or up by placing
+% a \vfill before or after them. The appropriate
+% use of \vfill depends on what kind of text is
+% on the last page and whether or not the columns
+% are being equalized.
+
+%\vfill
+
+% Can be used to pull up biographies so that the bottom of the last one
+% is flush with the other column.
+%\enlargethispage{-5in}
+
+
+
+% that's all folks
+\end{document}
