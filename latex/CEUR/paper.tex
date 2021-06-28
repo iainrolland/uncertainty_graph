@@ -49,27 +49,17 @@ twocolumn,
 \address[1]{Department of Engineering, University of Cambridge, Cambridge, CB2 1PZ United Kingdom}
 \address[2]{Joint Institute for Nuclear Research, 6 Joliot-Curie, Dubna, Moscow region, 141980, Russian Federation}
 
-\author[2]{A Nother}[%
-orcid=0000-0001-7116-9338,
-email=another@vu.nl,
-]
+\author[2]{A Nother}[orcid=0000-0001-7116-9338, email=another@vu.nl,]
 \address[3]{Vrije Universiteit Amsterdam, De Boelelaan 1105, 1081 HV Amsterdam, The Netherlands}
 
-\author[3]{A Nother}[%
-orcid=0000-0002-9421-8566,
-email=another@acm.org,
-]
+\author[3]{A Nother}[orcid=0000-0002-9421-8566,email=another@acm.org,]
 
 %%
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  A clear and well-documented document is presented as an
-  article formatted for publication by CEUR-WS in a conference
-  proceedings. Based on the ``ceurart'' document class, this article
-  presents and explains many of the common variations, as well as many
-  of the formatting elements an author may use in the preparation of
-  the documentation of their work.
+  A clear and well-documented document is presented as an article formatted for publication by CEUR-WS in a conference proceedings.
+  Based on the ``ceurart'' document class, this article presents and explains many of the common variations, as well as many of the formatting elements an author may use in the preparation of the documentation of their work.
 \end{abstract}
 
 %%
@@ -81,18 +71,180 @@ email=another@acm.org,
   CEUR-WS
 \end{keywords}
 
-%%
 %% This command processes the author and affiliation and title
 %% information and builds the first part of the formatted document.
 \maketitle
 
 \section{Introduction}
+The capability of algorithms to provide accurate measures of confidence and uncertainty is important if they are to be adopted in real-world scenarios where the stakes can be high \cite{Goodman_Flaxman_2017}.
+Although deep learning methods have provided new state of the art performance on many computer vision tasks \cite{lecun2015deeplearning}, and in many remote sensing tasks \cite{zhang2016deep}, they are often criticised for their lack of explainability \cite{pmlr_v70_guo17a} acting like a black box.
+Prediction transparency could be improved if models were able express when results can be given with confidence.
 
-\section{Modifications}
+The remainder of this paper is organised as follows: Section \ref{sec::related_work} contains a summary of related research into uncertainty-aware remote sensing classification methods, Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::networks} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarises and draws conclusions as well as suggests areas for future work.
 
-\section{Template parameters}
+\section{Related Work}
+\label{sec::related_work}
+TBW.
 
-\section{Front matter}
+\section{Uncertainty framework}
+\label{sec::unc_framework}
+
+\subsection{Subjective Logic}
+In order to understand the mapping between Dirichlet distributions and uncertainty estimates, it is first necessary to describe the Subjective Logic (SL) framework.
+The uncertainty reasoning described by SL takes an evidence-based approach to decision making \cite{DBLP:books/sp/Josang16}.
+Expressing an opinion using measured quantities of belief allows the distinction to be made between uncertainty due to a lack of evidence (vacuity) or uncertainty due to the presence of conflicting evidence (dissonance).
+A multinomial opinion, $\omega$, can be expressed as $\omega=\left(\mathbf{b}, u, \mathbf{a}\right)$, where $\mathbf{b}$ is a belief mass vector, the scalar $u$ is the uncertainty mass and $\mathbf{a}$ is the base rate vector.
+For an output, $\mathbf{y}$, of dimension K
+\begin{equation}
+    \mathbf{b}\in\mathbb{R}^K,\quad\mathbf{a}\in\mathbb{R}^K,\quad\mathbf{y}\in\mathbb{R}^K.
+\end{equation}
+A projection of $\omega$ onto a probability distribution can be made according to
+\begin{equation}
+    P(y=k) = b_k + a_ku.
+\label{eq:prob_projection}
+\end{equation}
+Given that for the base rate vector $\sum_{k=1}^Ka_k=1$, an additivity requirement is described by
+\begin{equation}
+    u+\sum_{k=1}^K b_k=1.
+\end{equation}
+
+\subsection{Dirichlet mapping}
+If $\mathbf{p}$ is a K-dimensional random vector containing the probability of belonging to each output class, and $\boldsymbol{\alpha}$ is the strength vector which parameterizes the Dirichlet distribution, the probability density function of the Dirichlet is given by
+\begin{equation}
+    \textrm{Dir}(\mathbf{p}|\boldsymbol{\alpha})= \frac{\Gamma(\sum_{k=1}^K\alpha_k)}{\prod_{k=1}\alpha_k}\prod_{k=1}^Kp_k^{\alpha_k-1},
+\end{equation}
+where $\Gamma()$ is the gamma function.
+The distribution's expected value is given by
+\begin{equation}
+\mathbb{E}\left[\textrm{Dir}(p_k\vert\boldsymbol{\alpha})\right]=\frac{\alpha_k}{\sum_{k=1}^K\alpha_k}.
+\label{eq:expected_dir}
+\end{equation}
+If we allow the uncertainty mass and base rates to be given by
+\begin{equation}
+    u=\frac{K}{\sum_{k=1}^K\alpha_k}=\frac{K}{S}
+\end{equation}
+and
+\begin{equation}
+    a_k=1/K, \forall k
+\end{equation}
+respectively, where $S$ refers to the Dirichlet strength, then by equating the probability projection of (\ref{eq:prob_projection}) with the expected value of the Dirichlet distribution given by (\ref{eq:expected_dir}), the expression for the belief mass can be obtained as
+\begin{equation}
+    b_k = \frac{\alpha_k-1}{S},
+\end{equation}
+which completes the mapping from Dirichlet distribution to SL opinion.
+\subsection{Uncertainty measures}
+From the definitions of the evidential uncertainties presented in \cite{8455454}, the measures of vacuity and dissonance have been adopted.
+The measure of vacuity uncertainty is simply given by the uncertainty mass, i.e.
+\begin{equation}
+    vac(\omega)\equiv u = \frac{K}{S},
+\label{eq::vacuity}
+\end{equation}
+and the measure of dissonance uncertainty is given by
+\begin{equation}
+    diss(\omega)=\sum_{i=1}^K\left(\frac{b_i\sum_{j\neq i}b_j\textrm{Bal}(b_j,b_i)}{\sum_{j\neq i}b_j}\right),
+\end{equation}
+where $\textrm{Bal}()$ is a function which gives the relative balance between two belief masses, defined by
+\begin{equation}
+    \textrm{Bal}(b_j,b_i)=\begin{cases}1-\frac{\vert b_i-b_j\vert}{b_i+b_j},&\text{if } b_i+b_j\neq0,\\
+    0,&\text{otherwise.}\end{cases}
+\end{equation}
+
+In order assess the relative ability of evidential uncertainties to express different types of doubt, three commonly used probabilistic measures of uncertainty (aleatoric, epistemic and entropy) are computed to provide comparisons.
+For a Bayesian model with inputs, outputs and parameters denoted $x$, $y$ and $\boldsymbol{\theta}$ respectively, the posterior which will be approximated is $p(\boldsymbol{\theta}\vert\mathcal{D})$, where $\mathcal{D}$ is the observed dataset.
+The total entropy, made up of both aleatoric and epistemic uncertainty \cite{pmlr_v80_depeweg18a} is given by
+\begin{equation}
+    \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right),
+\end{equation}
+where $\mathcal{H}()$ computes the differential entropy of a distribution.
+Aleatoric uncertainty, which accounts for noise inherent to the data observations and cannot be reduced with extra samples \cite{NIPS2017_2650d608}, is given by
+\begin{equation}
+    \mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right].
+\end{equation}
+The epistemic uncertainty, therefore, is given by the difference between these two quantities
+\begin{equation}
+    \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right)-\mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right].
+\label{eq::epistemic}
+\end{equation}
+In order to compute the above expressions for aleatoric and epistemic uncertainty, the posterior distribution over models is approximated by samples obtained using dropout inference \cite{pmlr_v48_gal16} as is described in Section \ref{sec::dropout_bayesian}.
+
+\section{Networks}
+\label{sec::networks}
+\subsection{Graph convolutional networks}
+The problem involves a graph with $N$ nodes described by an adjacency matrix $\mathbf{A}\in\mathbb{R}^{N\times N}$ and node features $\mathbf{X}\in\mathbb{R}^{N\times C}$, where $C$ denotes the number of channels in the input which describes each node. The graph's degree matrix, $\mathbf{D}\in\mathbb{R}^{N\times N}$, is a diagonal matrix with elements given by $\mathbf{D}_{ii}=\sum_j\mathbf{A}_{ij} $. For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
+Using the first-order approximation to spectral graph convolution derived by \cite{KipfW17}, the graph convolutional layer is given by
+\begin{equation}
+    \mathbf{Z}^{(l+1)}=\sigma\left(\tilde{\mathbf{D}}^{-\frac{1}{2}}\tilde{\mathbf{A}}\tilde{\mathbf{D}}^{-\frac{1}{2}}\mathbf{Z}^{(l)}\boldsymbol{W}^{(l)}\right),
+\label{eq::gcn_layer}
+\end{equation}
+where $\mathbf{Z}^{(l)}$, $\mathbf{Z}^{(l+1)}$ and $\boldsymbol{W}^{(l)}$ are the inputs, outputs and weights of the $\textrm{l}^\textrm{th}$ layer respectively, and $\sigma()$ is a non-linear activation function. For the first layer, the weights are $\boldsymbol{W}^{(0)}\in\mathbb{R}^{C\times F}$ and $\mathbf{Z}^{(0)} = \mathbf{X}\in\mathbb{R}^{N\times C}$ where $F$ is the number of features in the layer's output (a hyperparameter of the layer).
+Models referred to as graph convolutional networks (GCNs) from henceforth will refer to a model which consists of two of these layers used in sequence, the first using the rectified linear unit (ReLU) activation function, the second using a softmax activation.
+\subsection{Subjective models}
+In order to obtain models which will give node-level Dirichlet distribution parameters, the softmax output activation function used in a GCN is substituted for a ReLU function. In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the K-dimensional concentration parameters of the $\text{i}^\text{th}$ node. In order to train an evidential model, the loss function is made up of two components; a squared error term which is minimised in order to classify a greater proportion of the nodes correctly and a variance term which is minimized to incentivize the model to provide confident predictions where possible. This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
+\begin{equation}
+\begin{split}
+    \mathcal{L}(\boldsymbol{\theta})&=\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\text{Var}(p_{ik})\right],\\
+    &=\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\frac{\left(\frac{\alpha_{ik}}{S_i}\right)\left(1-\frac{\alpha_{ik}}{S_i}\right)}{S_i-K}\right],
+\end{split}
+\label{eq:core_loss}
+\end{equation}
+where $i\in\mathbb{L}$ refers to the fact that the loss is computed using a sum only over nodes in the training set, $\mathbb{L}$. Models trained with such an output activation and loss function will be denoted using the `S-' prefix in order to indicate they provide subjective predictions, e.g. S-GCN.
+\subsection{Dropout inference as a Bayesian approximation}
+\label{sec::dropout_bayesian}
+It has been shown that a model with dropout can be considered to represent the posterior distribution over models \cite{pmlr_v48_gal16}. The dropouts are used to represent stochasticity in the model parameters \cite{C9SC01992H}. A given combination of dropouts can be considered to represent a model sampled from the approximate posterior, $q(\boldsymbol{\theta})$, with the actual posterior distribution of models being $p(\boldsymbol{\theta}|\mathcal{D})$. Monte Carlo sampling can be used to approximately compute quantities such as the term $\mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]$ in (\ref{eq::epistemic}) allowing the aleatoric and epistemic uncertainty to be calculated. This can be done using the approximation 
+\begin{equation}
+    \mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]\approx\frac{1}{M}\sum_{m=1}^M \mathcal{H}\left(p(y\vert x; \boldsymbol{\theta}^m)\right),
+\end{equation}
+where $\boldsymbol{\theta}^m\sim q(\boldsymbol{\theta})$ is a model sampled by performing dropout inference. When this technique has been used, the model name represents this using a `B' in its name, e.g. S-BGCN, showing that this Bayesian approximation has been used. The Drop-GCN model, which is used for benchmarking the subjective methods, refers to the same technique when applied to a `vanilla' GCN. 
+
+\subsection{Convergence assistance techniques}
+In order to assist the convergence of subjective models, two additional assistance techniques have been used: teacher knowledge distillation and the use of a Dirichlet prior. These methods have been shown to allow subjective models to provide better uncertainty estimates \cite{Zhao2020}.
+\subsubsection{Teacher knowledge distillation}
+By training a non-subjective model in advance, its outputs, $\hat{p}_{ik}$, can be used in order to encourage the subjective model to converge to node Dirichlet distributions with $\mathbb{E}[p_{ik}]$ which are close to the teacher's deterministic estimates. This is achieved using an additional term in the loss function,
+\begin{equation}
+    \mathcal{L}_{\text{``-T''}}(\boldsymbol{\theta})=\sum_i\sum_k\left(\hat{p}_{ik}\log\frac{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}\right),
+\end{equation}
+which corresponds to the summation of KL-divergence terms between the teacher output probability and the expected value of the subjective model's Dirichlet distribution for each node, $\sum_i\infdiv{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}$. Notice that this sum is computed over all nodes as opposed to just the nodes in $\mathbb{L}$. Models trained using a teacher are denoted using the ``-T'' suffix e.g. a S-BGCN-T model would indicate that a pre-trained GCN was used as a teacher in order to assist the training convergence of a subjective graph convolutional model.
+\subsubsection{Dirichlet prior}
+A second convergence assistance technique which can be used involves the use of a Dirichlet prior, $\hat{\boldsymbol{\alpha}}$. The exact method chosen to provide $\hat{\boldsymbol{\alpha}}$ will depend on the nature of the problem but we will assume nodes which are nearby in the graph are more likely to belong to the same output class than nodes which are far apart, a property known as homophily \cite{huang2021combining}. Using this assumption, we can use the computed distances on the graph in order to assign contributions of evidence from observed node labels to the other nodes in the graph using a function of our choosing. If $d_{ij}$ denotes the shortest path distance between a given node, indexed by $i$ and an observed node, indexed by $j$, then the amount of evidence contributed to suggest that the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class is given by
+\begin{equation}
+    h_{ik}(y_j,d_{ij})=
+    \begin{cases}
+    \frac{1}{\sqrt{2\pi\sigma^2}}\exp{\left(\frac{-d_{ij}^2}{2\sigma^2}\right)}, & \text{if } y_{jk}=1,\\
+    0, & \text{otherwise},
+    \end{cases}
+\end{equation}
+where $\sigma$ is a scale parameter which controls the order of distance magnitude over which evidence will propagate in the prior. The total evidence to suggest the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class, $e_{ik}$ can be found by summing these contributions over the nodes in the training set such that the element in the prior is given by 
+\begin{equation}
+    \hat{\boldsymbol{\alpha}}_{ik}=1+e_{ik}=1+\sum_{j\in\mathbb{L}}h_{ik}(y_j, d_{ij}).
+\end{equation}
+A node which is far from all observed nodes, i.e. $h_{ik}(y_j,d_{ij})\approx0, \forall j\in\mathbb{L}$, will mean that $\hat{\boldsymbol{\alpha}}_{i}\approx\mathbf{1}$. The prior's Dirichlet strength for the $\text{i}^\text{th}$ node, $\hat{S}_i$, will therefore be approximately $K$ and the node's vacuity, as given by (\ref{eq::vacuity}), will be approximately 1. On the other hand, a node which is near to many observed nodes will have large $\hat{S}_i$ and node vacuity will be small. The KL-divergence between the Dirichlet distribution of the prior and the model output can be incorporated into the loss function using the term
+\begin{equation}
+    \mathcal{L}_{\text{``-K''}}(\boldsymbol{\theta})=\sum_i\infdiv{\text{Dir}(\mathbf{p}_i\vert\boldsymbol{\alpha}_i)}{\text{Dir}(\hat{\mathbf{p}}_i\vert\hat{\boldsymbol{\alpha}}_i)},
+\label{eq::teacher_loss}
+\end{equation}
+which can be incorporated into the total loss. Models trained using a prior are denoted using the ``-K'' suffix e.g. a S-BGCN-K model would indicate that the graph convolutional network was trained with a loss function using a weighted combination of the loss in (\ref{eq:core_loss}) and the term described in (\ref{eq::teacher_loss}).
+
+Table \ref{loss_table} shows how these convergence assistance techniques can be weighted and combined in various permutations to provide a total loss function, $\mathcal{L}_\text{total}(\boldsymbol{\theta})$, as well as the model name abbreviations used to denote which combination has been used. The coefficients $\lambda_{\text{``-T''}}$ and $\lambda_{\text{``-K''}}$ are used to control the relative importance of the teacher network and the Dirichlet prior respectively against the importance of the subjective loss function given in (\ref{eq:core_loss}). These are considered hyperparameters of the model which are to be tuned during training.
+
+
+\begin{table}
+\renewcommand{\arraystretch}{1.5}
+\caption{Loss function components and their weighting coefficients for different model types}
+\label{loss_table}
+\centering
+\begin{tabular}{cc}
+\hline
+\bfseries Model name & \bfseries $\mathcal{L}_{\text{total}}(\boldsymbol{\theta})$\\
+\hline
+S-BGCN & $\mathcal{L}(\boldsymbol{\theta})$ \\
+S-BGCN-T & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-T''}}\mathcal{L}_{\text{``-T''}}(\boldsymbol{\theta})$ \\
+S-BGCN-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-K''}}\mathcal{L}_{\text{``-K''}}(\boldsymbol{\theta})$ \\
+S-BGCN-T-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-T''}}\mathcal{L}_{\text{``-T''}}(\boldsymbol{\theta})+\lambda_{\text{``-K''}}\mathcal{L}_{\text{``-K''}}(\boldsymbol{\theta})$ \\
+\hline
+\end{tabular}
+\end{table}
+
+
 
 \subsection{Title Information}
 
