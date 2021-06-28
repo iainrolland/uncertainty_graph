@@ -1,26 +1,20 @@
-%% The first command in your LaTeX source must be the \documentclass command.
-%%
-%% Options:
-%% twocolumn : Two column layout.
-%% hf: enable header and footer.
 \documentclass[
 twocolumn,
 % hf,
 ]{ceurart}
 
-%%
-%% One can fix some overfulls
+% One can fix some overfulls
 \sloppy
 
-%%
-%% Minted listings support 
-%% Need pygment <http://pygments.org/> <http://pypi.python.org/pypi/Pygments>
-%% \usepackage{minted}
+% Minted listings support 
+% Need pygment <http://pygments.org/> <http://pypi.python.org/pypi/Pygments>
+% \usepackage{minted}
+
 % Add figures directory as graphics path
 \graphicspath{ {./figures/} }
+
 % Used for KL-divergence
 \usepackage{mathtools}
-
 \DeclarePairedDelimiterX{\infdivx}[2]{(}{)}{%
   #1\;\delimsize\|\;#2%
 }
@@ -28,68 +22,37 @@ twocolumn,
 \DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
 
 % Used for colored boxes in class legend table
-\usepackage{lmodern}
 \usepackage{tcolorbox}
-\usepackage{array}
 % Custom column widths`
+\usepackage{array}
 \newcolumntype{N}{>{\centering\arraybackslash}m{.9cm}}
 \newcolumntype{M}{>{\centering\arraybackslash}m{1.0cm}}
 \newcolumntype{Z}{>{\centering\arraybackslash}m{1.6cm}}
 \newcolumntype{Y}{>{\centering\arraybackslash}m{2.3cm}}
 \usepackage{multirow}
-% Used to control how many authors appear before et al. in References
-\let\oldthebibliography\thebibliography
-\renewcommand{\thebibliography}[1]{%
-  \oldthebibliography{#1}
-  \let\oldbibitem\bibitem
-  \let\oldtextsc\textsc
-  \def\oldbbland{et}
-  \newcounter{authorcount}
-  \def\bibitem[##1]##2{%
-    \let\textsc\oldtextsc
-    \let\bbland\oldbbland
-    \oldbibitem[##1]{##2}%
-    \let\textsc\mytextsc%
-    \let\bbland\mybbland
-    \setcounter{authorcount}{0}
-  }
-  \def\mybbland{\setcounter{authorcount}{0}\oldbbland}
-  \def\dropetal##1.{ \bbletal}
-  \def\mytextsc##1{%
-    \oldtextsc{##1}%
-    \stepcounter{authorcount}%
-    \ifnum\value{authorcount}=5\relax%
-      \expandafter\dropetal%
-    \fi%
-  }%
-}
 
-%% auto break lines
-%% \setminted{breaklines=true}
+% auto break lines
+% \setminted{breaklines=true}
 
-%% end of the preamble, start of the body of the document source.
+% end of the preamble, start of the body of the document source.
 \begin{document}
 
-%%
-%% Rights management information.
-%% CC-BY is default license.
+% Rights management information.
+% CC-BY is default license.
 \copyrightyear{2021}
 \copyrightclause{Copyright for this paper by its authors.
   Use permitted under Creative Commons License Attribution 4.0
   International (CC BY 4.0).}
 
-%%
-%% This command is for the conference information
+% This command is for the conference information
 \conference{CIKM'21: Complex Data Challenges for Earth Observation,
   November 01--05, 2021, Online}
 
-%%
-%% The "title" command
+% The "title" command
 \title{Uncertainty-aware graph-based multimodal remote sensing classification}
-%
 
-%% The "author" command and its associated commands are used to define
-%% the authors and their affiliations.
+% The "author" command and its associated commands are used to define
+% the authors and their affiliations.
 \author[1]{Iain~Rolland}[orcid=0000-0002-4137-5605, email=imr27@cam.ac.uk,]
 
 \address[1]{Department of Engineering, University of Cambridge, Cambridge, CB2 1PZ United Kingdom}
@@ -100,25 +63,20 @@ twocolumn,
 
 \author[3]{A Nother}[orcid=0000-0002-9421-8566,email=another@acm.org,]
 
-%%
-%% The abstract is a short summary of the work to be presented in the
-%% article.
+% The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
   A clear and well-documented document is presented as an article formatted for publication by CEUR-WS in a conference proceedings.
   Based on the ``ceurart'' document class, this article presents and explains many of the common variations, as well as many of the formatting elements an author may use in the preparation of the documentation of their work.
 \end{abstract}
 
-%%
-%% Keywords. The author(s) should pick words that accurately describe
-%% the work being presented. Separate the keywords with commas.
+% Keywords. The author(s) should pick words that accurately describe the work being presented. Separate the keywords with commas.
 \begin{keywords}
   paper template \sep
   paper formatting \sep
   CEUR-WS
 \end{keywords}
 
-%% This command processes the author and affiliation and title
-%% information and builds the first part of the formatted document.
+% This command processes the author and affiliation and title information and builds the first part of the formatted document.
 \maketitle
 
 \section{Introduction}
@@ -253,7 +211,7 @@ This can be done using the approximation
 \end{equation}
 where $\boldsymbol{\theta}^m\sim q(\boldsymbol{\theta})$ is a model sampled by performing dropout inference.
 When this technique has been used, the model name represents this using a `B' in its name, e.g. S-BGCN, showing that this Bayesian approximation has been used.
-The Drop-GCN model, which is used for benchmarking the subjective methods, refers to the same technique when applied to a `vanilla' GCN. 
+The Drop-GCN model, which is used for benchmarking the subjective methods, refers to the same technique when applied to a `vanilla' GCN.
 
 \subsection{Convergence assistance techniques}
 In order to assist the convergence of subjective models, two additional assistance techniques have been used: teacher knowledge distillation and the use of a Dirichlet prior.
@@ -321,7 +279,8 @@ S-BGCN-T-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-T''}}\mathcal{L
 \subsection{Data}
 A subsection of the 2018 IEEE GRSS Data Fusion Challenge dataset was selected for the purposes of validating the described methods as a means for obtaining uncertainty aware classifications.
 The modes of data collected come from three sensor types: LiDAR, optical and hyperspectral (HS).
-The LiDAR data was provided at $0.5$ m resolution, the same resolution as the ground truth labels (GT). In order to simplify analysis, the optical data (which was provided at $0.05$ m resolution) and the HS data (which was provided at $1.0$ m resolution) were bilinearly resampled to obtain $0.5$ m resolution across inputs and outputs. 
+The LiDAR data was provided at $0.5$ m resolution, the same resolution as the ground truth labels (GT).
+In order to simplify analysis, the optical data (which was provided at $0.05$ m resolution) and the HS data (which was provided at $1.0$ m resolution) were bilinearly resampled to obtain $0.5$ m resolution across inputs and outputs.
 
 The graph was constructed with each $0.5$ m $\times$ $0.5$ m pixel representing a node in the graph.
 Each node has a 52-dimensional feature vector (produced by stacking 3 optical channels, 48 HS channels and 1 LiDAR channel) describing it.
@@ -394,7 +353,7 @@ These weights were used when computing the loss during training such that the lo
 
 All GCN-based models were constructed using a dropout layer (dropout probability $0.5$), a graph convolutional layer, as described in (\ref{eq::gcn_layer}), a second dropout layer (dropout probability $0.5$) and a second graph convolutional layer with the relevant output activation function.
 The kernel weights of the first graph convolutional layer were regularized using an $L_2$ penalization.
-Where dropout inference has been used, the number of samples taken, $M$, was 100. 
+Where dropout inference has been used, the number of samples taken, $M$, was 100.
 
 Hyperparameters including the learning rate, the $L_2$ regularization coefficient and the number of GCN layer output features, $F$, were selected via a grid-search method.
 Where used, $\lambda_{\text{``-T''}}$ and $\lambda_{\text{``-K''}}$ were also found using a grid-search.
@@ -466,7 +425,7 @@ Drop-GCN & - & -  & $0.619$&$0.243$&$0.600$ \\ \hline
 \end{table}
 
 The S-BGCN-T-K model trained using the pixel prior achieves the highest ranked misclassification detection performance, with the uncertainty measured by entropy providing the best distinguishing metric, with AUROC and AUPR of $0.912$ and $0.672$ respectively, closely followed by the performance achieved by the measures of vacuity (AUROC and AUPR of $0.908$ and $0.659$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.905$ and $0.649$ respectively).
-The performance seen for the S-BGCN-T-K model trained using the superpixel prior is markedly lower, with its best-detecting uncertainty metrics (dissonance and aleatoric uncertainty) not exceeding AUROC and AUPR of $0.801$ and $0.467$ respectively. 
+The performance seen for the S-BGCN-T-K model trained using the superpixel prior is markedly lower, with its best-detecting uncertainty metrics (dissonance and aleatoric uncertainty) not exceeding AUROC and AUPR of $0.801$ and $0.467$ respectively.
 
 \subsection{Out of distribution detection}
 
@@ -531,45 +490,28 @@ This highlights the importance of describing a meaningful prior in advance for t
 While the S-BGCN-T-K model trained using the superpixel prior does not detect OOD nodes quite so successfully, it still seems to benefit from the use of the prior as it achieves next-best performance (with its measure of vacuity giving a mean AUROC and AUPR of $0.839$ and $0.234$ respectively), perhaps also alongside the S-MLP (with its measure of dissonance giving a mean AUROC and AUPR of $0.805$ and $0.233$ respectively).
 
 The fact that vacuity is the uncertainty measure which best distinguishes OOD nodes for either form of S-BGCN-T-K model reflects intuition.
-Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which vacuity is likely higher. 
+Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which vacuity is likely higher.
 
-\subsection{Title variants}
-Delete .
-\subsection{Authors and Affiliations}
+\section{Conclusion}
+\label{sec::conclusion}
 
-\subsection{Abstract and Keywords}
+The misclassification and OOD detection performance of the S-BGCN-T-K presented represents a promising avenue for uncertainty-aware learning.
+The uncertainties which are produced by this model can be used to better distinguish misclassified nodes and OOD nodes than any of the other methods which are presented.
+Models which are capable of better quantifying confidence in this way are important for real-world applications where the consequences of misplaced model certainty can be high-stake.
 
-Abstract here.
-
-\section{Sectioning Commands}
-
-\section{Math Equations}
-
-\subsection{Inline (In-text) Equations}
-
-\subsection{Display Equations}
-
-\section{Citations and Bibliographies}
-
-\subsection{Some examples}
-
-\section{Acknowledgments}
+The improved estimate of uncertainty obtained through the use of a prior is shown in the S-BGCN-T-K results, with equivalent models which do not use a prior, e.g. S-BGCN-T, producing uncertainty measures which cannot identify misclassified or OOD nodes as successfully.
+In order to distinguish misclassifications, the S-BGCN-T-K model measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance.
+For the task of identifying nodes which come from a distribution other than the distributions on which the model was trained, the measure of vacuity stands out as the uncertainty metric which does this most successfully.
 
 %% The acknowledgments section is defined using the "acknowledgments" environment
 %% (and NOT an unnumbered section). This ensures the proper
 %% identification of the section in the article metadata, and the
 %% consistent spelling of the heading.
 \begin{acknowledgments}
-  Thanks to the developers of ACM consolidated LaTeX styles
+  Thanks to ...
 \end{acknowledgments}
 
-%%
-%% Define the bibliography file to be used
+% Define the bibliography file to be used
 \bibliography{bibtex/bib/IEEEabrv, bibtex/bib/imrolland}
-% \printbibliography
-
 
 \end{document}
-
-%%
-%% End of file
