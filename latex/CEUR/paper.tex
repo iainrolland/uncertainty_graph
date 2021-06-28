@@ -16,19 +16,57 @@ twocolumn,
 %% Minted listings support 
 %% Need pygment <http://pygments.org/> <http://pypi.python.org/pypi/Pygments>
 %% \usepackage{minted}
+% Add figures directory as graphics path
 \graphicspath{ {./figures/} }
+% Used for KL-divergence
+\usepackage{mathtools}
+
+\DeclarePairedDelimiterX{\infdivx}[2]{(}{)}{%
+  #1\;\delimsize\|\;#2%
+}
+\newcommand{\infdiv}{D\infdivx}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+
+% Used for colored boxes in class legend table
+\usepackage{lmodern}
 \usepackage{tcolorbox}
 \usepackage{array}
+% Custom column widths`
 \newcolumntype{N}{>{\centering\arraybackslash}m{.9cm}}
 \newcolumntype{M}{>{\centering\arraybackslash}m{1.0cm}}
 \newcolumntype{Z}{>{\centering\arraybackslash}m{1.6cm}}
-\newcolumntype{L}{>{\centering\arraybackslash}m{2.3cm}}
+\newcolumntype{Y}{>{\centering\arraybackslash}m{2.3cm}}
 \usepackage{multirow}
-%
+% Used to control how many authors appear before et al. in References
+\let\oldthebibliography\thebibliography
+\renewcommand{\thebibliography}[1]{%
+  \oldthebibliography{#1}
+  \let\oldbibitem\bibitem
+  \let\oldtextsc\textsc
+  \def\oldbbland{et}
+  \newcounter{authorcount}
+  \def\bibitem[##1]##2{%
+    \let\textsc\oldtextsc
+    \let\bbland\oldbbland
+    \oldbibitem[##1]{##2}%
+    \let\textsc\mytextsc%
+    \let\bbland\mybbland
+    \setcounter{authorcount}{0}
+  }
+  \def\mybbland{\setcounter{authorcount}{0}\oldbbland}
+  \def\dropetal##1.{ \bbletal}
+  \def\mytextsc##1{%
+    \oldtextsc{##1}%
+    \stepcounter{authorcount}%
+    \ifnum\value{authorcount}=5\relax%
+      \expandafter\dropetal%
+    \fi%
+  }%
+}
+
 %% auto break lines
 %% \setminted{breaklines=true}
 
-%%
 %% end of the preamble, start of the body of the document source.
 \begin{document}
 
@@ -178,16 +216,22 @@ In order to compute the above expressions for aleatoric and epistemic uncertaint
 \section{Networks}
 \label{sec::networks}
 \subsection{Graph convolutional networks}
-The problem involves a graph with $N$ nodes described by an adjacency matrix $\mathbf{A}\in\mathbb{R}^{N\times N}$ and node features $\mathbf{X}\in\mathbb{R}^{N\times C}$, where $C$ denotes the number of channels in the input which describes each node. The graph's degree matrix, $\mathbf{D}\in\mathbb{R}^{N\times N}$, is a diagonal matrix with elements given by $\mathbf{D}_{ii}=\sum_j\mathbf{A}_{ij} $. For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
+The problem involves a graph with $N$ nodes described by an adjacency matrix $\mathbf{A}\in\mathbb{R}^{N\times N}$ and node features $\mathbf{X}\in\mathbb{R}^{N\times C}$, where $C$ denotes the number of channels in the input which describes each node.
+The graph's degree matrix, $\mathbf{D}\in\mathbb{R}^{N\times N}$, is a diagonal matrix with elements given by $\mathbf{D}_{ii}=\sum_j\mathbf{A}_{ij} $.
+For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
 Using the first-order approximation to spectral graph convolution derived by \cite{KipfW17}, the graph convolutional layer is given by
 \begin{equation}
     \mathbf{Z}^{(l+1)}=\sigma\left(\tilde{\mathbf{D}}^{-\frac{1}{2}}\tilde{\mathbf{A}}\tilde{\mathbf{D}}^{-\frac{1}{2}}\mathbf{Z}^{(l)}\boldsymbol{W}^{(l)}\right),
 \label{eq::gcn_layer}
 \end{equation}
-where $\mathbf{Z}^{(l)}$, $\mathbf{Z}^{(l+1)}$ and $\boldsymbol{W}^{(l)}$ are the inputs, outputs and weights of the $\textrm{l}^\textrm{th}$ layer respectively, and $\sigma()$ is a non-linear activation function. For the first layer, the weights are $\boldsymbol{W}^{(0)}\in\mathbb{R}^{C\times F}$ and $\mathbf{Z}^{(0)} = \mathbf{X}\in\mathbb{R}^{N\times C}$ where $F$ is the number of features in the layer's output (a hyperparameter of the layer).
+where $\mathbf{Z}^{(l)}$, $\mathbf{Z}^{(l+1)}$ and $\boldsymbol{W}^{(l)}$ are the inputs, outputs and weights of the $\textrm{l}^\textrm{th}$ layer respectively, and $\sigma()$ is a non-linear activation function.
+For the first layer, the weights are $\boldsymbol{W}^{(0)}\in\mathbb{R}^{C\times F}$ and $\mathbf{Z}^{(0)} = \mathbf{X}\in\mathbb{R}^{N\times C}$ where $F$ is the number of features in the layer's output (a hyperparameter of the layer).
 Models referred to as graph convolutional networks (GCNs) from henceforth will refer to a model which consists of two of these layers used in sequence, the first using the rectified linear unit (ReLU) activation function, the second using a softmax activation.
 \subsection{Subjective models}
-In order to obtain models which will give node-level Dirichlet distribution parameters, the softmax output activation function used in a GCN is substituted for a ReLU function. In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the K-dimensional concentration parameters of the $\text{i}^\text{th}$ node. In order to train an evidential model, the loss function is made up of two components; a squared error term which is minimised in order to classify a greater proportion of the nodes correctly and a variance term which is minimized to incentivize the model to provide confident predictions where possible. This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
+In order to obtain models which will give node-level Dirichlet distribution parameters, the softmax output activation function used in a GCN is substituted for a ReLU function.
+In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the K-dimensional concentration parameters of the $\text{i}^\text{th}$ node.
+In order to train an evidential model, the loss function is made up of two components; a squared error term which is minimised in order to classify a greater proportion of the nodes correctly and a variance term which is minimized to incentivize the model to provide confident predictions where possible.
+This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
 \begin{equation}
 \begin{split}
     \mathcal{L}(\boldsymbol{\theta})&=\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\text{Var}(p_{ik})\right],\\
@@ -195,25 +239,39 @@ In order to obtain models which will give node-level Dirichlet distribution para
 \end{split}
 \label{eq:core_loss}
 \end{equation}
-where $i\in\mathbb{L}$ refers to the fact that the loss is computed using a sum only over nodes in the training set, $\mathbb{L}$. Models trained with such an output activation and loss function will be denoted using the `S-' prefix in order to indicate they provide subjective predictions, e.g. S-GCN.
+where $i\in\mathbb{L}$ refers to the fact that the loss is computed using a sum only over nodes in the training set, $\mathbb{L}$.
+Models trained with such an output activation and loss function will be denoted using the `S-' prefix in order to indicate they provide subjective predictions, e.g. S-GCN.
 \subsection{Dropout inference as a Bayesian approximation}
 \label{sec::dropout_bayesian}
-It has been shown that a model with dropout can be considered to represent the posterior distribution over models \cite{pmlr_v48_gal16}. The dropouts are used to represent stochasticity in the model parameters \cite{C9SC01992H}. A given combination of dropouts can be considered to represent a model sampled from the approximate posterior, $q(\boldsymbol{\theta})$, with the actual posterior distribution of models being $p(\boldsymbol{\theta}|\mathcal{D})$. Monte Carlo sampling can be used to approximately compute quantities such as the term $\mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]$ in (\ref{eq::epistemic}) allowing the aleatoric and epistemic uncertainty to be calculated. This can be done using the approximation 
+It has been shown that a model with dropout can be considered to represent the posterior distribution over models \cite{pmlr_v48_gal16}.
+The dropouts are used to represent stochasticity in the model parameters \cite{C9SC01992H}.
+A given combination of dropouts can be considered to represent a model sampled from the approximate posterior, $q(\boldsymbol{\theta})$, with the actual posterior distribution of models being $p(\boldsymbol{\theta}|\mathcal{D})$.
+Monte Carlo sampling can be used to approximately compute quantities such as the term $\mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]$ in (\ref{eq::epistemic}) allowing the aleatoric and epistemic uncertainty to be calculated.
+This can be done using the approximation 
 \begin{equation}
     \mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]\approx\frac{1}{M}\sum_{m=1}^M \mathcal{H}\left(p(y\vert x; \boldsymbol{\theta}^m)\right),
 \end{equation}
-where $\boldsymbol{\theta}^m\sim q(\boldsymbol{\theta})$ is a model sampled by performing dropout inference. When this technique has been used, the model name represents this using a `B' in its name, e.g. S-BGCN, showing that this Bayesian approximation has been used. The Drop-GCN model, which is used for benchmarking the subjective methods, refers to the same technique when applied to a `vanilla' GCN. 
+where $\boldsymbol{\theta}^m\sim q(\boldsymbol{\theta})$ is a model sampled by performing dropout inference.
+When this technique has been used, the model name represents this using a `B' in its name, e.g. S-BGCN, showing that this Bayesian approximation has been used.
+The Drop-GCN model, which is used for benchmarking the subjective methods, refers to the same technique when applied to a `vanilla' GCN. 
 
 \subsection{Convergence assistance techniques}
-In order to assist the convergence of subjective models, two additional assistance techniques have been used: teacher knowledge distillation and the use of a Dirichlet prior. These methods have been shown to allow subjective models to provide better uncertainty estimates \cite{Zhao2020}.
+In order to assist the convergence of subjective models, two additional assistance techniques have been used: teacher knowledge distillation and the use of a Dirichlet prior.
+These methods have been shown to allow subjective models to provide better uncertainty estimates \cite{Zhao2020}.
 \subsubsection{Teacher knowledge distillation}
-By training a non-subjective model in advance, its outputs, $\hat{p}_{ik}$, can be used in order to encourage the subjective model to converge to node Dirichlet distributions with $\mathbb{E}[p_{ik}]$ which are close to the teacher's deterministic estimates. This is achieved using an additional term in the loss function,
+By training a non-subjective model in advance, its outputs, $\hat{p}_{ik}$, can be used in order to encourage the subjective model to converge to node Dirichlet distributions with $\mathbb{E}[p_{ik}]$ which are close to the teacher's deterministic estimates.
+This is achieved using an additional term in the loss function,
 \begin{equation}
     \mathcal{L}_{\text{``-T''}}(\boldsymbol{\theta})=\sum_i\sum_k\left(\hat{p}_{ik}\log\frac{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}\right),
 \end{equation}
-which corresponds to the summation of KL-divergence terms between the teacher output probability and the expected value of the subjective model's Dirichlet distribution for each node, $\sum_i\infdiv{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}$. Notice that this sum is computed over all nodes as opposed to just the nodes in $\mathbb{L}$. Models trained using a teacher are denoted using the ``-T'' suffix e.g. a S-BGCN-T model would indicate that a pre-trained GCN was used as a teacher in order to assist the training convergence of a subjective graph convolutional model.
+which corresponds to the summation of KL-divergence terms between the teacher output probability and the expected value of the subjective model's Dirichlet distribution for each node, $\sum_i\infdiv{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}$.
+Notice that this sum is computed over all nodes as opposed to just the nodes in $\mathbb{L}$.
+Models trained using a teacher are denoted using the ``-T'' suffix e.g. a S-BGCN-T model would indicate that a pre-trained GCN was used as a teacher in order to assist the training convergence of a subjective graph convolutional model.
 \subsubsection{Dirichlet prior}
-A second convergence assistance technique which can be used involves the use of a Dirichlet prior, $\hat{\boldsymbol{\alpha}}$. The exact method chosen to provide $\hat{\boldsymbol{\alpha}}$ will depend on the nature of the problem but we will assume nodes which are nearby in the graph are more likely to belong to the same output class than nodes which are far apart, a property known as homophily \cite{huang2021combining}. Using this assumption, we can use the computed distances on the graph in order to assign contributions of evidence from observed node labels to the other nodes in the graph using a function of our choosing. If $d_{ij}$ denotes the shortest path distance between a given node, indexed by $i$ and an observed node, indexed by $j$, then the amount of evidence contributed to suggest that the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class is given by
+A second convergence assistance technique which can be used involves the use of a Dirichlet prior, $\hat{\boldsymbol{\alpha}}$.
+The exact method chosen to provide $\hat{\boldsymbol{\alpha}}$ will depend on the nature of the problem but we will assume nodes which are nearby in the graph are more likely to belong to the same output class than nodes which are far apart, a property known as homophily \cite{huang2021combining}.
+Using this assumption, we can use the computed distances on the graph in order to assign contributions of evidence from observed node labels to the other nodes in the graph using a function of our choosing.
+If $d_{ij}$ denotes the shortest path distance between a given node, indexed by $i$ and an observed node, indexed by $j$, then the amount of evidence contributed to suggest that the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class is given by
 \begin{equation}
     h_{ik}(y_j,d_{ij})=
     \begin{cases}
@@ -221,19 +279,25 @@ A second convergence assistance technique which can be used involves the use of 
     0, & \text{otherwise},
     \end{cases}
 \end{equation}
-where $\sigma$ is a scale parameter which controls the order of distance magnitude over which evidence will propagate in the prior. The total evidence to suggest the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class, $e_{ik}$ can be found by summing these contributions over the nodes in the training set such that the element in the prior is given by 
+where $\sigma$ is a scale parameter which controls the order of distance magnitude over which evidence will propagate in the prior.
+The total evidence to suggest the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class, $e_{ik}$ can be found by summing these contributions over the nodes in the training set such that the element in the prior is given by 
 \begin{equation}
     \hat{\boldsymbol{\alpha}}_{ik}=1+e_{ik}=1+\sum_{j\in\mathbb{L}}h_{ik}(y_j, d_{ij}).
 \end{equation}
-A node which is far from all observed nodes, i.e. $h_{ik}(y_j,d_{ij})\approx0, \forall j\in\mathbb{L}$, will mean that $\hat{\boldsymbol{\alpha}}_{i}\approx\mathbf{1}$. The prior's Dirichlet strength for the $\text{i}^\text{th}$ node, $\hat{S}_i$, will therefore be approximately $K$ and the node's vacuity, as given by (\ref{eq::vacuity}), will be approximately 1. On the other hand, a node which is near to many observed nodes will have large $\hat{S}_i$ and node vacuity will be small. The KL-divergence between the Dirichlet distribution of the prior and the model output can be incorporated into the loss function using the term
+A node which is far from all observed nodes, i.e. $h_{ik}(y_j,d_{ij})\approx0, \forall j\in\mathbb{L}$, will mean that $\hat{\boldsymbol{\alpha}}_{i}\approx\mathbf{1}$.
+The prior's Dirichlet strength for the $\text{i}^\text{th}$ node, $\hat{S}_i$, will therefore be approximately $K$ and the node's vacuity, as given by (\ref{eq::vacuity}), will be approximately 1.
+On the other hand, a node which is near to many observed nodes will have large $\hat{S}_i$ and node vacuity will be small.
+The KL-divergence between the Dirichlet distribution of the prior and the model output can be incorporated into the loss function using the term
 \begin{equation}
     \mathcal{L}_{\text{``-K''}}(\boldsymbol{\theta})=\sum_i\infdiv{\text{Dir}(\mathbf{p}_i\vert\boldsymbol{\alpha}_i)}{\text{Dir}(\hat{\mathbf{p}}_i\vert\hat{\boldsymbol{\alpha}}_i)},
 \label{eq::teacher_loss}
 \end{equation}
-which can be incorporated into the total loss. Models trained using a prior are denoted using the ``-K'' suffix e.g. a S-BGCN-K model would indicate that the graph convolutional network was trained with a loss function using a weighted combination of the loss in (\ref{eq:core_loss}) and the term described in (\ref{eq::teacher_loss}).
+which can be incorporated into the total loss.
+Models trained using a prior are denoted using the ``-K'' suffix e.g. a S-BGCN-K model would indicate that the graph convolutional network was trained with a loss function using a weighted combination of the loss in (\ref{eq:core_loss}) and the term described in (\ref{eq::teacher_loss}).
 
-Table \ref{loss_table} shows how these convergence assistance techniques can be weighted and combined in various permutations to provide a total loss function, $\mathcal{L}_\text{total}(\boldsymbol{\theta})$, as well as the model name abbreviations used to denote which combination has been used. The coefficients $\lambda_{\text{``-T''}}$ and $\lambda_{\text{``-K''}}$ are used to control the relative importance of the teacher network and the Dirichlet prior respectively against the importance of the subjective loss function given in (\ref{eq:core_loss}). These are considered hyperparameters of the model which are to be tuned during training.
-
+Table \ref{loss_table} shows how these convergence assistance techniques can be weighted and combined in various permutations to provide a total loss function, $\mathcal{L}_\text{total}(\boldsymbol{\theta})$, as well as the model name abbreviations used to denote which combination has been used.
+The coefficients $\lambda_{\text{``-T''}}$ and $\lambda_{\text{``-K''}}$ are used to control the relative importance of the teacher network and the Dirichlet prior respectively against the importance of the subjective loss function given in (\ref{eq:core_loss}).
+These are considered hyperparameters of the model which are to be tuned during training.
 
 \begin{table}
 \renewcommand{\arraystretch}{1.5}
@@ -252,7 +316,7 @@ S-BGCN-T-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-T''}}\mathcal{L
 \end{tabular}
 \end{table}
 
-\subsection{Results and analysis}
+\section{Results and analysis}
 \label{sec::results}
 \subsection{Data}
 A subsection of the 2018 IEEE GRSS Data Fusion Challenge dataset was selected for the purposes of validating the described methods as a means for obtaining uncertainty aware classifications.
@@ -363,7 +427,7 @@ The AUROC and AUPR values measured for the task of misclassification detection c
 \label{tab::misc_auroc}
 \small
 \begin{center}
-\begin{tabular}{Lccccc}
+\begin{tabular}{Yccccc}
 \hline
 \multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}             \\
       & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
@@ -385,7 +449,7 @@ Drop-GCN & - & - &$0.897$&$0.552$&$0.887$ \\ \hline
 \label{tab::misc_aupr}
 \small
 \begin{center}
-\begin{tabular}{Lccccc}
+\begin{tabular}{Yccccc}
 \hline
 \multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
       & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
@@ -422,7 +486,7 @@ The AUROC and AUPR values measured can be found in Table \ref{tab::ood_auroc} an
 \label{tab::ood_auroc}
 \small
 \begin{center}
-\begin{tabular}{Lccccc}
+\begin{tabular}{Yccccc}
 \hline
 \multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}             \\
       & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
@@ -444,7 +508,7 @@ Drop-GCN & - & - &$0.541\pm0.185$&$0.420\pm0.161$&$0.538\pm0.187$    \\ \hline
 \label{tab::ood_aupr}
 \small
 \begin{center}
-\begin{tabular}{Lccccc}
+\begin{tabular}{Yccccc}
 \hline
 \multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
       & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
@@ -470,7 +534,7 @@ The fact that vacuity is the uncertainty measure which best distinguishes OOD no
 Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which vacuity is likely higher. 
 
 \subsection{Title variants}
-
+Delete .
 \subsection{Authors and Affiliations}
 
 \subsection{Abstract and Keywords}
@@ -502,8 +566,7 @@ Abstract here.
 %%
 %% Define the bibliography file to be used
 \bibliography{bibtex/bib/IEEEabrv, bibtex/bib/imrolland}
-
-
+% \printbibliography
 
 
 \end{document}
