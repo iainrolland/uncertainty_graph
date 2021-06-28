@@ -17,6 +17,14 @@ twocolumn,
 %% Need pygment <http://pygments.org/> <http://pypi.python.org/pypi/Pygments>
 %% \usepackage{minted}
 \graphicspath{ {./figures/} }
+\usepackage{tcolorbox}
+\usepackage{array}
+\newcolumntype{N}{>{\centering\arraybackslash}m{.9cm}}
+\newcolumntype{M}{>{\centering\arraybackslash}m{1.0cm}}
+\newcolumntype{Z}{>{\centering\arraybackslash}m{1.6cm}}
+\newcolumntype{L}{>{\centering\arraybackslash}m{2.3cm}}
+\usepackage{multirow}
+%
 %% auto break lines
 %% \setminted{breaklines=true}
 
@@ -244,9 +252,222 @@ S-BGCN-T-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{``-T''}}\mathcal{L
 \end{tabular}
 \end{table}
 
+\subsection{Results and analysis}
+\label{sec::results}
+\subsection{Data}
+A subsection of the 2018 IEEE GRSS Data Fusion Challenge dataset was selected for the purposes of validating the described methods as a means for obtaining uncertainty aware classifications.
+The modes of data collected come from three sensor types: LiDAR, optical and hyperspectral (HS).
+The LiDAR data was provided at $0.5$ m resolution, the same resolution as the ground truth labels (GT). In order to simplify analysis, the optical data (which was provided at $0.05$ m resolution) and the HS data (which was provided at $1.0$ m resolution) were bilinearly resampled to obtain $0.5$ m resolution across inputs and outputs. 
 
+The graph was constructed with each $0.5$ m $\times$ $0.5$ m pixel representing a node in the graph.
+Each node has a 52-dimensional feature vector (produced by stacking 3 optical channels, 48 HS channels and 1 LiDAR channel) describing it.
+The graph edges are computed using a $k$-nearest neighbors algorithm with two nodes receiving an edge connecting them if either node was one of the $k$ nodes which were nearest the other.
+This produces a graph which is both undirected and unweighted.
+The graph, which contains approximately 2.16 million nodes, was computed with $k=15$.
 
-\subsection{Title Information}
+The ground truth labels describe 20 different urban land cover/land use classes as well as an unlabelled state, described as Unclassified.
+The exact types and abundances of these classes can be found in Table \ref{tab::classes}.
+The classes which do not appear in the subsection of the dataset but exist within the wider GT are included for completeness.
+
+\begin{table}
+% \renewcommand{\arraystretch}{1.5}
+\caption{Land cover/Land use classes in selected subsection of Houston dataset ground truth}
+\label{tab::classes}
+\centering
+\begin{tabular}{NNcZ}
+\hline
+\bfseries Class Value & \bfseries Legend Color & \bfseries Class Name & \bfseries Number of Nodes (total)\\
+\hline
+$0$ & \colorbox[rgb]{0.0,0.0,0.0}{\textcolor{white}{\phantom{A}}} & Unclassified & $1302595$\\
+$1$ & \colorbox[rgb]{0.0,1.0,0.03}{\textcolor{white}{\phantom{A}}} & Healthy grass & $10120$ \\
+$2$ & \colorbox[rgb]{0.21, 0.69, 0.15}{\textcolor{white}{\phantom{A}}} & Stressed grass & $16332$ \\
+$3$ & \colorbox[rgb]{0.53, 0.73, 0.57}{\textcolor{white}{\phantom{A}}} & Artificial turf & $0$ \\
+$4$ & \colorbox[rgb]{0.  , 0.47, 0.08}{\textcolor{white}{\phantom{A}}} & Evergreen trees & $38288$ \\
+$5$ & \colorbox[rgb]{0.  , 0.3 , 0.}{\textcolor{white}{\phantom{A}}} & Deciduous trees & $3082$ \\
+$6$ & \colorbox[rgb]{0.75, 0.48, 0.08}{\textcolor{white}{\phantom{A}}} & Bare earth & $0$ \\
+$7$ & \colorbox[rgb]{0.  , 0.89, 0.89}{\textcolor{white}{\phantom{A}}} & Water & $332$ \\
+$8$ & \colorbox[rgb]{0.98, 0.98, 0.98}{\textcolor{white}{\phantom{A}}} & Residential buildings & $12417$ \\
+$9$ & \colorbox[rgb]{0.94, 0.76, 0.92}{\textcolor{white}{\phantom{A}}} & Non-residential buildings & $587141$ \\
+$10$ & \colorbox[rgb]{1.  , 0.35, 0.36}{\textcolor{white}{\phantom{A}}} & Roads & $68831$ \\
+$11$ & \colorbox[rgb]{0.64, 0.64, 0.64}{\textcolor{white}{\phantom{A}}} & Sidewalks & $96020$ \\
+$12$ & \colorbox[rgb]{0.36, 0.36, 0.36}{\textcolor{white}{\phantom{A}}} & Crosswalks & $3584$ \\
+$13$ & \colorbox[rgb]{0.79, 0.  , 0.01}{\textcolor{white}{\phantom{A}}} & Major thoroughfares & $17181$ \\
+$14$ & \colorbox[rgb]{0.54, 0.  , 0.04}{\textcolor{white}{\phantom{A}}} & Highways & $0$ \\
+$15$ & \colorbox[rgb]{1.  , 0.65, 0.07}{\textcolor{white}{\phantom{A}}} & Railways & $0$ \\
+$16$ & \colorbox[rgb]{1.,1.,0.}{\textcolor{white}{\phantom{A}}} & Paved parking lots & $7677$ \\
+$17$ & \colorbox[rgb]{0.92, 0.44, 0.}{\textcolor{white}{\phantom{A}}} & Unpaved parking lots & $0$ \\
+$18$ & \colorbox[rgb]{0.98, 0.  , 1.}{\textcolor{white}{\phantom{A}}} & Cars & $0$ \\
+$19$ & \colorbox[rgb]{0.  , 0.  , 1.}{\textcolor{white}{\phantom{A}}} & Trains & $0$ \\
+$20$ & \colorbox[rgb]{0.49, 0.76, 0.8}{\textcolor{white}{\phantom{A}}} & Stadium seats & $0$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/gt.jpg}
+\caption{Ground truth data with colors depicting classes as defined in Table \ref{tab::classes}. The subset area of the 2018 IEEE GRSS Data Fusion Challenge dataset covers the region with lower-left coordinate 272956, 3289689 and upper-right coordinate 273856, 3290290 (coordinates given in the NAD83 / UTM zone 15N Coordinate Reference System).}
+\label{fig::gt}
+\end{figure}
+
+In order to divide the annotations into a training, a validation and a test set, any adjacent pixels with the same label were considered part of one contiguous label block.
+Before randomly allocating these contiguous label blocks into the different sets, the blocks were separated along grid lines in order to prevent any particularly large contiguous blocks from skewing its set into having an over-representation of that class (see Figure \ref{fig::dataset_split} for a visual depiction of a random split).
+The set of contiguous blocks obtained after splitting along these arbitrary grid lines were then randomly allocated into training, validation and test sets with proportions of 40\%, 30\% and 30\% respectively.
+This method of assigning contiguous blocks into a split together as opposed to randomly splitting pixels was done so as to reduce the number of strongly correlated samples (due to local spatial correlations in the input vectors) across the test/validation/test sets which would come with having pixels of immediate proximity split into different sets.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/dataset_split.jpg}
+\caption{RGB data channels with overlaying colors used to depict a random dataset split with the red, green and blue overlay colors representing training, validation and test set pixels respectively.}
+\label{fig::dataset_split}
+\end{figure}
+
+\subsection{Network training and hyperparameters}
+Models were implemented and trained using the TensorFlow library \cite{tensorflow2015_whitepaper}.
+In order to handle the imbalance of classes in the dataset, sample weighting was used.
+Samples were given weights which were inversely proportional to the number of total samples of each class in the training set.
+These weights were used when computing the loss during training such that the loss related to nodes belonging to under-represented classes were given an increased influence over parameter updates and vice versa.
+
+All GCN-based models were constructed using a dropout layer (dropout probability $0.5$), a graph convolutional layer, as described in (\ref{eq::gcn_layer}), a second dropout layer (dropout probability $0.5$) and a second graph convolutional layer with the relevant output activation function.
+The kernel weights of the first graph convolutional layer were regularized using an $L_2$ penalization.
+Where dropout inference has been used, the number of samples taken, $M$, was 100. 
+
+Hyperparameters including the learning rate, the $L_2$ regularization coefficient and the number of GCN layer output features, $F$, were selected via a grid-search method.
+Where used, $\lambda_{\text{``-T''}}$ and $\lambda_{\text{``-K''}}$ were also found using a grid-search.
+
+Learning was performed for a maximum of 400 epochs, but was stopped early if the validation loss failed to decrease further for 60 consecutive epochs.
+If stopped early, model weights were returned to the settings which provided the lowest validation set loss upon the termination of training.
+    
+Each test was performed for different random dataset splits and model weight initializations in order to obtain mean and standard deviation measures of performance.
+
+Benchmark models presented include the `vanilla' GCN (which can provide uncertainty via entropy) and the Drop-GCN which is a GCN where dropout inference has been applied in order to produce estimates of aleatoric and epistemic uncertainty in addition to entropy.
+
+\subsection{Misclassification detection}
+
+Given that model uncertainties should provide a measure of the confidence which can be had about a model's predictions, a worthwhile estimate of uncertainty should be able to distinguish model misclassifications from accurate classifications.
+In order to measure a uncertainty output's ability to separate misclassifications, an experiment which produces a receiver operating characteristic (ROC) curve can be performed.
+By plotting the true positive rate (the proportion of misclassified nodes correctly flagged as misclassifications) against the false positive rate (the proportion of correctly classified nodes which were incorrectly flagged as misclassified) for various threshold values of the uncertainty metric, the ROC curve can be used to illustrate how well the uncertainty metric can separate the model's misclassifications.
+The area under the ROC curve (AUROC) can be used as a single numerical representation of the ROC figure, where a perfect discriminator would have an AUROC of $1.0$.
+An alternative measure of how well the uncertainty metric separates misclassified nodes is provided by considering the precision-recall (PR) curve, which plots the proportion of nodes which were detected as misclassifications which were actually misclassified nodes (precision) against the proportion of actually misclassified nodes which were detected as misclassifications (recall).
+Again, the area under the PR curve (AUPR) can be used as a single numerical summary of this relationship, and a perfect discriminator would have an AUPR of $1.0$.
+
+Models of each type described (as well as benchmark models) were trained and their outputs analysed in order to assess which model types as well as which of their uncertainty measures were best able to distinguish misclassified nodes.
+This was done by comparing the output labels for the test nodes to the respective test nodes' GT labels in order to separate correctly and incorrectly classified nodes.
+Each uncertainty metric in turn was then used to measure ROC and PR curve values for various threshold uncertainty metric values and the area under these curves subsequently calculated.
+
+The AUROC and AUPR values measured for the task of misclassification detection can be seen in Table \ref{tab::misc_auroc} and Table \ref{tab::misc_aupr} respectively.
+
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by the AUROC metric).}
+\label{tab::misc_auroc}
+\small
+\begin{center}
+\begin{tabular}{Lccccc}
+\hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}             \\
+      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) & $0.676$ & $0.801$ &$0.792$&$0.509$&$0.798$    \\
+S-BGCN-T-K (pixel prior) & $0.908$ & $0.840$ &$0.905$&$0.451$&$\mathbf{0.912}$ \\
+S-BGCN-T & $0.729$ & $0.834$ &$0.869$&$0.618$&$0.861$ \\ 
+S-BGCN & $0.760$ & $0.877$ &$0.894$&$0.623$&$0.886$ \\ 
+S-GCN & $0.729$ & $0.842$ &-&-&$0.859$ \\ 
+S-MLP &$0.845$&$0.904$&-&-&$0.909$ \\
+GCN & - & - &-&-&$0.887$ \\ 
+Drop-GCN & - & - &$0.897$&$0.552$&$0.887$ \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by the AUPR metric).}
+\label{tab::misc_aupr}
+\small
+\begin{center}
+\begin{tabular}{Lccccc}
+\hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
+      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) & $0.352$&$0.398$&$0.467$&$0.237$&$0.474$ \\
+S-BGCN-T-K (pixel prior) & $0.659$&$0.545$&$0.649$&$0.206$&$\mathbf{0.672}$ \\
+S-BGCN-T & $0.451$&$0.484$&$0.591$&$0.278$&$0.579$ \\ 
+S-BGCN & $0.489$ & $0.558$  &$0.633$&$0.268$&$0.616$ \\ 
+S-GCN & $0.472$ & $0.538$  &-&-&$0.595$ \\ 
+S-MLP & $0.417$&$0.566$&-&-&$0.616$ \\
+GCN & - & -  &-&-&$0.606$ \\ 
+Drop-GCN & - & -  & $0.619$&$0.243$&$0.600$ \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+The S-BGCN-T-K model trained using the pixel prior achieves the highest ranked misclassification detection performance, with the uncertainty measured by entropy providing the best distinguishing metric, with AUROC and AUPR of $0.912$ and $0.672$ respectively, closely followed by the performance achieved by the measures of vacuity (AUROC and AUPR of $0.908$ and $0.659$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.905$ and $0.649$ respectively).
+The performance seen for the S-BGCN-T-K model trained using the superpixel prior is markedly lower, with its best-detecting uncertainty metrics (dissonance and aleatoric uncertainty) not exceeding AUROC and AUPR of $0.801$ and $0.467$ respectively. 
+
+\subsection{Out of distribution detection}
+
+A lack of confidence held about the model's prediction might also arise if it receives an input which belongs to a distribution other than the distributions seen during training.
+The relative inability of neural networks' to successfully extrapolate beyond the support of the training data is a well-known weakness of these methods \cite{NIPS2017_9ef2ed4b}.
+By training models using only a subset of the classes provided by the GT, with the other classes acting as out of distribution (OOD) samples, an analysis of whether the uncertainty metrics are capable of distinguishing OOD nodes can be performed.
+Using the same approach as described for misclassification detection, the AUROC and AUPR can be calculated for each uncertainty output provided by each model type, in order to determine the relative performance of the respective metrics for this task.
+
+In the results presented, two classes were randomly selected to act as OOD.
+This was repeated 10 times, with two new randomly sampled classes selected for each training and evaluation loop in order that the variation in OOD detection performance due to the nature of the classes selected as OOD could be averaged out and the mean and standard deviation of performance presented.
+Each model type was assessed over the same 10 sampled OOD class pairs for fairness.
+The AUROC and AUPR values measured can be found in Table \ref{tab::ood_auroc} and Table \ref{tab::ood_aupr} respectively.
+
+\begin{table*}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{OOD detection: Ability of each uncertainty type to detect OOD nodes (measured by the AUROC metric). Values shown represent the mean $\pm$ standard deviation.}
+\label{tab::ood_auroc}
+\small
+\begin{center}
+\begin{tabular}{Lccccc}
+\hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}             \\
+      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) & $0.839\pm0.092$ & $0.691\pm0.173$ &$0.831\pm0.079$&$0.268\pm0.180$&$0.833\pm0.076$    \\           
+S-BGCN-T-K (pixel prior) & $\mathbf{0.882\pm0.085}$ & $0.605\pm0.197$ &$0.877\pm0.089$&$0.193\pm0.107$&$0.878\pm0.089$    \\        
+S-BGCN-T & $0.588\pm0.147$ & $0.664\pm0.133$ &$0.593\pm0.188$&$0.396\pm0.096$&$0.578\pm0.186$    \\ 
+S-BGCN & $0.586\pm0.147$ & $0.666\pm0.132$ &$0.596\pm0.193$&$0.401\pm0.092$&$0.580\pm0.191$    \\ 
+S-GCN & $0.580\pm0.145$ & $0.650\pm0.120$ &-&-&$0.586\pm0.181$    \\ 
+S-MLP & $0.767\pm0.152$ & $0.805\pm0.114$ &-&-&$0.787\pm0.125$    \\   
+GCN & - & - &-&-&$0.538\pm0.188$    \\ 
+Drop-GCN & - & - &$0.541\pm0.185$&$0.420\pm0.161$&$0.538\pm0.187$    \\ \hline
+\end{tabular}
+\end{center}
+\end{table*}
+
+\begin{table*}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{OOD detection: Ability of each uncertainty type to detect OOD nodes (measured by the AUPR metric). Values shown represent the mean $\pm$ standard deviation.}
+\label{tab::ood_aupr}
+\small
+\begin{center}
+\begin{tabular}{Lccccc}
+\hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
+      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) &$0.234\pm0.252$&$0.142\pm0.185$&$0.214\pm0.249$&$0.099\pm0.227$&$0.212\pm0.251$    \\   
+S-BGCN-T-K (pixel prior) &$\mathbf{0.318\pm0.289}$&$0.132\pm0.184$&$0.316\pm0.306$&$0.082\pm0.178$&$0.316\pm0.306$    \\        
+S-BGCN-T &$0.128\pm0.187$&$0.137\pm0.192$&$0.148\pm0.211$&$0.095\pm0.193$&$0.143\pm0.208$    \\ 
+S-BGCN & $0.127\pm0.186$ & $0.139\pm0.190$  &$0.150\pm0.213$&$0.095\pm0.195$&$0.145\pm0.209$    \\ 
+S-GCN & $0.125\pm0.185$ & $0.130\pm0.191$  &-&-&$0.143\pm0.207$    \\ 
+S-MLP & $0.245\pm0.214$ & $0.233\pm0.170$ &-&-&$0.219\pm0.201$    \\   
+GCN & - & -  &-&-&$0.116\pm0.179$    \\ 
+Drop-GCN & - & -  & $0.116\pm0.179$&$0.115\pm0.257$&$0.116\pm0.179$    \\ \hline
+\end{tabular}
+\end{center}
+\end{table*}
+
+As for the task of misclassification detection, the S-BGCN-T-K model trained using the pixel prior is also the highest ranked model for the task of OOD detection.
+Its measure of vacuity uncertainty provided the best distinguishing metric, with mean AUROC and AUPR of $0.882$ and $0.318$ respectively, closely followed by performance from the measures of entropy (AUROC and AUPR of $0.878$ and $0.316$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.877$ and $0.316$ respectively).
+While competitive performance was observed across a number of the model types trained for the task of misclassification detection, in the task of OOD detection the performance of the S-BGCN-T-K model trained using the pixel prior stands out above others.
+This highlights the importance of describing a meaningful prior in advance for the purposes of achieving improved uncertainty estimates.
+While the S-BGCN-T-K model trained using the superpixel prior does not detect OOD nodes quite so successfully, it still seems to benefit from the use of the prior as it achieves next-best performance (with its measure of vacuity giving a mean AUROC and AUPR of $0.839$ and $0.234$ respectively), perhaps also alongside the S-MLP (with its measure of dissonance giving a mean AUROC and AUPR of $0.805$ and $0.233$ respectively).
+
+The fact that vacuity is the uncertainty measure which best distinguishes OOD nodes for either form of S-BGCN-T-K model reflects intuition.
+Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which vacuity is likely higher. 
 
 \subsection{Title variants}
 
@@ -280,7 +501,7 @@ Abstract here.
 
 %%
 %% Define the bibliography file to be used
-\bibliography{sample-ceur}
+\bibliography{bibtex/bib/IEEEabrv, bibtex/bib/imrolland}
 
 
 
