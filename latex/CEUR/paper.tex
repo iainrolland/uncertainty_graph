@@ -55,33 +55,29 @@ twocolumn,
 \author[1]{Iain~Rolland}[orcid=0000-0002-4137-5605, email=imr27@cam.ac.uk,]
 
 \address[1]{Department of Engineering, University of Cambridge, Cambridge, CB2 1PZ United Kingdom}
-\address[2]{Joint Institute for Nuclear Research, 6 Joliot-Curie, Dubna, Moscow region, 141980, Russian Federation}
+\address[2]{Department of Physics and Technology, UiT the Arctic University of Norway, P.O. box 6050 Langnes, NO-9037, Tromsø, Norway}
 
-\author[2]{A Nother}[orcid=0000-0001-7116-9338, email=another@vu.nl,]
-\address[3]{Vrije Universiteit Amsterdam, De Boelelaan 1105, 1081 HV Amsterdam, The Netherlands}
+\author[1]{A Nother}[orcid=0000-0001-7116-9338, email=another@vu.nl,]
 
-\author[3]{A Nother}[orcid=0000-0002-9421-8566,email=another@acm.org,]
+\author[1]{A Nother}[orcid=0000-0002-9421-8566,email=another@acm.org,]
 
 % The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
-Satellite data is abundant.
-Satellite processing methods are important.
-Many satellite processing tasks involve classification.
-Many of the most successful processing methods are deterministic.
-Decision-making in high-stakes environments should be made with knowledge about the uncertainties of belief.
-Graph-based evidential classification has the potential to provide measures of uncertainty to better assist decision-making.
-Using Subjective Logic framework, this method is capable of distinguishing uncertainty due to the lack of previously observed training samples (vacuity) from the uncertainty due to having observed training samples with conflicting classifications (dissonance).
-Using provided measures of vacuity and dissonance, the networks are better able to identify misclassified nodes as assessed.
-The method is also better able to identify out of distribution samples.
+In order to adopt deep learning methods in environments where the decisions being made are high-stakes, it is important to have methods which are capable of producing a quantification of the prediction confidence or uncertainty.
+Graph-based convolutional neural networks which are trained to perform classification of multimodal remote sensing data such that the model output represents a Dirichlet distribution parameterization can also be used to obtain measures of prediction uncertainty.
+By making a correspondence between a multinomial opinion, as described by subjective logic, and a Dirichlet distribution parameterization, a direct mapping between the two can be performed.
+A multinomial opinion of this kind can produce quantified measures of uncertainty and distinguishes uncertainty due to a lack of evidence (vacuity) and uncertainty due to conflicting evidence (dissonance).
+With an appropriately chosen loss function, the graph-based classifier will converge to provide accurate estimates of uncertainty.
+The results presented in this paper show that the measures of uncertainty provided by such models are capable of better distinguishing model misclassifications as well as out-of-distribution data samples than probabilistic measures of uncertainty produced by deterministic neural networks.
 \end{abstract}
 
 % Keywords. The author(s) should pick words that accurately describe the work being presented. Separate the keywords with commas.
 \begin{keywords}
   Multimodal remote sensing \sep
-  Uncertainty-aware \sep
-  Graph convolutional networks \sep
-  Subjective logic \sep
-  Land cover classification
+  uncertainty estimates \sep
+  graph convolutional networks \sep
+  subjective logic \sep
+  land cover classification
 \end{keywords}
 
 % This command processes the author and affiliation and title information and builds the first part of the formatted document.
@@ -89,8 +85,10 @@ The method is also better able to identify out of distribution samples.
 
 \section{Introduction}
 The capability of algorithms to provide accurate measures of confidence and uncertainty is important if they are to be adopted in real-world scenarios where the stakes can be high \cite{Goodman2017}.
-Although deep learning methods have provided new state of the art performance on many computer vision tasks \cite{LeCun2015}, and in many remote sensing tasks \cite{LiangpeiZhang2016}, they are often criticised for their lack of explainability \cite{ChuanGuo2017} acting like a black box.
-Prediction transparency could be improved if models were able express when results can be given with confidence.
+Although deep learning methods are often capable of producing high-accuracy predictions \cite{LeCun2015, LiangpeiZhang2016}, they are generally criticised for being unable to express when to have confidence in the prediction and when the prediction should be presented as uncertain.
+If deep learning models are to be integrated reliably into real-world decision making processes, it is of vital importance that the methods being used are capable of accurately expressing uncertainty.
+
+ANOTHER PARAGRAPH OR TWO HERE!
 
 The remainder of this paper is organised as follows: Section \ref{sec::related_work} contains a summary of related research into uncertainty-aware remote sensing classification methods, Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::networks} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarises and draws conclusions as well as suggests areas for future work.
 
@@ -514,7 +512,7 @@ This can be seen by comparing the S-BGCN-T-K misclassification detection and OOD
 Of the uncertainty measures produced by the presented S-BGCN-T-K model, the measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance for the task of identifying misclassifications.
 In order to identify OOD nodes, the measure of vacuity stands out as the best-performing   uncertainty metric.
 
-Future work should consider the generalisation potential of this method by considering its performance on other challenging remote sensing classification datasets. There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter $\sigma$ or by assessing a variety of entirely different functions.
+Future work should consider the generalisation potential of this method by considering its performance on other challenging remote sensing classification datasets. There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter $\sigma$ or by assessing a variety of entirely different function.
 %% The acknowledgments section is defined using the "acknowledgments" environment
 %% (and NOT an unnumbered section). This ensures the proper
 %% identification of the section in the article metadata, and the
