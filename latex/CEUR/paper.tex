@@ -45,8 +45,7 @@ twocolumn,
   International (CC BY 4.0).}
 
 % This command is for the conference information
-\conference{CIKM'21: Complex Data Challenges for Earth Observation,
-  November 01--05, 2021, Online}
+\conference{Proceedings of the CIKM 2021 Workshops, November 01--05, 2021, Online}
 
 % The "title" command
 \title{Uncertainty-aware graph-based multimodal remote sensing classification}
@@ -65,15 +64,24 @@ twocolumn,
 
 % The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
-  A clear and well-documented document is presented as an article formatted for publication by CEUR-WS in a conference proceedings.
-  Based on the ``ceurart'' document class, this article presents and explains many of the common variations, as well as many of the formatting elements an author may use in the preparation of the documentation of their work.
+Satellite data is abundant.
+Satellite processing methods are important.
+Many satellite processing tasks involve classification.
+Many of the most successful processing methods are deterministic.
+Decision-making in high-stakes environments should be made with knowledge about the uncertainties of belief.
+Graph-based evidential classification has the potential to provide measures of uncertainty to better assist decision-making.
+Using Subjective Logic framework, this method is capable of distinguishing uncertainty due to the lack of previously observed training samples (vacuity) from the uncertainty due to having observed training samples with conflicting classifications (dissonance).
+Using provided measures of vacuity and dissonance, the networks are better able to identify misclassified nodes as assessed.
+The method is also better able to identify out of distribution samples.
 \end{abstract}
 
 % Keywords. The author(s) should pick words that accurately describe the work being presented. Separate the keywords with commas.
 \begin{keywords}
-  paper template \sep
-  paper formatting \sep
-  CEUR-WS
+  Multimodal remote sensing \sep
+  Uncertainty-aware \sep
+  Graph convolutional networks \sep
+  Subjective logic \sep
+  Land cover classification
 \end{keywords}
 
 % This command processes the author and affiliation and title information and builds the first part of the formatted document.
@@ -495,14 +503,18 @@ Since vacuity measures the absence of evidence for a prediction, it is natural t
 \section{Conclusion}
 \label{sec::conclusion}
 
-The misclassification and OOD detection performance of the S-BGCN-T-K presented represents a promising avenue for uncertainty-aware learning.
-The uncertainties which are produced by this model can be used to better distinguish misclassified nodes and OOD nodes than any of the other methods which are presented.
-Models which are capable of better quantifying confidence in this way are important for real-world applications where the consequences of misplaced model certainty can be high-stake.
+In this paper we have presented a novel method for providing uncertainties while perfoming multi-class classification of multimodal remote sensing data.
+The adopted framework, based upon the theory of Subjective Logic, provides measures of vacuity and dissonance which are better capable of identifying misclassifications and out of distribution samples than the alternative probabilistic measures of uncertainty assessed.
+Experimental results have shown the performance of the S-BGCN-T-K model in the tasks of misclassification and OOD detection to be improved against baseline methods.
+This represents a promising avenue for uncertainty-aware learning in the task of multimodal remote sensing classification.
+The development of algorithms which can be used to better distinguish misclassified nodes and OOD nodes and thus can better quantify confidence, is important for real-world applications where the consequences of misplaced model certainty can be high-stake.
 
-The improved estimate of uncertainty obtained through the use of a prior is shown in the S-BGCN-T-K results, with equivalent models which do not use a prior, e.g. S-BGCN-T, producing uncertainty measures which cannot identify misclassified or OOD nodes as successfully.
-In order to distinguish misclassifications, the S-BGCN-T-K model measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance.
-For the task of identifying nodes which come from a distribution other than the distributions on which the model was trained, the measure of vacuity stands out as the uncertainty metric which does this most successfully.
+The presented results have illustrated an improvement in the quality of uncertainty estimates obtained through the use of a prior.
+This can be seen by comparing the S-BGCN-T-K misclassification detection and OOD detection performance with equivalent models which do not use a prior, e.g. S-BGCN-T.
+Of the uncertainty measures produced by the presented S-BGCN-T-K model, the measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance for the task of identifying misclassifications.
+In order to identify OOD nodes, the measure of vacuity stands out as the best-performing   uncertainty metric.
 
+Future work should consider the generalisation potential of this method by considering its performance on other challenging remote sensing classification datasets. There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter $\sigma$ or by assessing a variety of entirely different functions.
 %% The acknowledgments section is defined using the "acknowledgments" environment
 %% (and NOT an unnumbered section). This ensures the proper
 %% identification of the section in the article metadata, and the
