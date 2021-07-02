@@ -298,39 +298,39 @@ The ground truth labels describe 20 different urban land cover/land use classes 
 The exact types and abundances of these classes can be found in Table \ref{tab::classes}.
 The classes which do not appear in the subsection of the dataset but exist within the wider GT are included for completeness.
 
-\begin{table}
-% \renewcommand{\arraystretch}{1.5}
-\caption{Land cover/Land use classes in selected subsection of Houston dataset ground truth}
-\label{tab::classes}
-\centering
-\begin{tabular}{NNcZ}
-\hline
-\bfseries Class Value & \bfseries Legend Color & \bfseries Class Name & \bfseries Number of Nodes (total)\\
-\hline
-$0$ & \colorbox[rgb]{0.0,0.0,0.0}{\textcolor{white}{\phantom{A}}} & Unclassified & $1302595$\\
-$1$ & \colorbox[rgb]{0.0,1.0,0.03}{\textcolor{white}{\phantom{A}}} & Healthy grass & $10120$ \\
-$2$ & \colorbox[rgb]{0.21, 0.69, 0.15}{\textcolor{white}{\phantom{A}}} & Stressed grass & $16332$ \\
-$3$ & \colorbox[rgb]{0.53, 0.73, 0.57}{\textcolor{white}{\phantom{A}}} & Artificial turf & $0$ \\
-$4$ & \colorbox[rgb]{0.  , 0.47, 0.08}{\textcolor{white}{\phantom{A}}} & Evergreen trees & $38288$ \\
-$5$ & \colorbox[rgb]{0.  , 0.3 , 0.}{\textcolor{white}{\phantom{A}}} & Deciduous trees & $3082$ \\
-$6$ & \colorbox[rgb]{0.75, 0.48, 0.08}{\textcolor{white}{\phantom{A}}} & Bare earth & $0$ \\
-$7$ & \colorbox[rgb]{0.  , 0.89, 0.89}{\textcolor{white}{\phantom{A}}} & Water & $332$ \\
-$8$ & \colorbox[rgb]{0.98, 0.98, 0.98}{\textcolor{white}{\phantom{A}}} & Residential buildings & $12417$ \\
-$9$ & \colorbox[rgb]{0.94, 0.76, 0.92}{\textcolor{white}{\phantom{A}}} & Non-residential buildings & $587141$ \\
-$10$ & \colorbox[rgb]{1.  , 0.35, 0.36}{\textcolor{white}{\phantom{A}}} & Roads & $68831$ \\
-$11$ & \colorbox[rgb]{0.64, 0.64, 0.64}{\textcolor{white}{\phantom{A}}} & Sidewalks & $96020$ \\
-$12$ & \colorbox[rgb]{0.36, 0.36, 0.36}{\textcolor{white}{\phantom{A}}} & Crosswalks & $3584$ \\
-$13$ & \colorbox[rgb]{0.79, 0.  , 0.01}{\textcolor{white}{\phantom{A}}} & Major thoroughfares & $17181$ \\
-$14$ & \colorbox[rgb]{0.54, 0.  , 0.04}{\textcolor{white}{\phantom{A}}} & Highways & $0$ \\
-$15$ & \colorbox[rgb]{1.  , 0.65, 0.07}{\textcolor{white}{\phantom{A}}} & Railways & $0$ \\
-$16$ & \colorbox[rgb]{1.,1.,0.}{\textcolor{white}{\phantom{A}}} & Paved parking lots & $7677$ \\
-$17$ & \colorbox[rgb]{0.92, 0.44, 0.}{\textcolor{white}{\phantom{A}}} & Unpaved parking lots & $0$ \\
-$18$ & \colorbox[rgb]{0.98, 0.  , 1.}{\textcolor{white}{\phantom{A}}} & Cars & $0$ \\
-$19$ & \colorbox[rgb]{0.  , 0.  , 1.}{\textcolor{white}{\phantom{A}}} & Trains & $0$ \\
-$20$ & \colorbox[rgb]{0.49, 0.76, 0.8}{\textcolor{white}{\phantom{A}}} & Stadium seats & $0$ \\
-\hline
-\end{tabular}
-\end{table}
+% \begin{table}
+% % \renewcommand{\arraystretch}{1.5}
+% \caption{Land cover/Land use classes in selected subsection of Houston dataset ground truth}
+% \label{tab::classes}
+% \centering
+% \begin{tabular}{NNcZ}
+% \hline
+% \bfseries Class Value & \bfseries Legend Color & \bfseries Class Name & \bfseries Number of Nodes (total)\\
+% \hline
+% $0$ & \colorbox[rgb]{0.0,0.0,0.0}{\textcolor{white}{\phantom{A}}} & Unclassified & $1302595$\\
+% $1$ & \colorbox[rgb]{0.0,1.0,0.03}{\textcolor{white}{\phantom{A}}} & Healthy grass & $10120$ \\
+% $2$ & \colorbox[rgb]{0.21, 0.69, 0.15}{\textcolor{white}{\phantom{A}}} & Stressed grass & $16332$ \\
+% $3$ & \colorbox[rgb]{0.53, 0.73, 0.57}{\textcolor{white}{\phantom{A}}} & Artificial turf & $0$ \\
+% $4$ & \colorbox[rgb]{0.  , 0.47, 0.08}{\textcolor{white}{\phantom{A}}} & Evergreen trees & $38288$ \\
+% $5$ & \colorbox[rgb]{0.  , 0.3 , 0.}{\textcolor{white}{\phantom{A}}} & Deciduous trees & $3082$ \\
+% $6$ & \colorbox[rgb]{0.75, 0.48, 0.08}{\textcolor{white}{\phantom{A}}} & Bare earth & $0$ \\
+% $7$ & \colorbox[rgb]{0.  , 0.89, 0.89}{\textcolor{white}{\phantom{A}}} & Water & $332$ \\
+% $8$ & \colorbox[rgb]{0.98, 0.98, 0.98}{\textcolor{white}{\phantom{A}}} & Residential buildings & $12417$ \\
+% $9$ & \colorbox[rgb]{0.94, 0.76, 0.92}{\textcolor{white}{\phantom{A}}} & Non-residential buildings & $587141$ \\
+% $10$ & \colorbox[rgb]{1.  , 0.35, 0.36}{\textcolor{white}{\phantom{A}}} & Roads & $68831$ \\
+% $11$ & \colorbox[rgb]{0.64, 0.64, 0.64}{\textcolor{white}{\phantom{A}}} & Sidewalks & $96020$ \\
+% $12$ & \colorbox[rgb]{0.36, 0.36, 0.36}{\textcolor{white}{\phantom{A}}} & Crosswalks & $3584$ \\
+% $13$ & \colorbox[rgb]{0.79, 0.  , 0.01}{\textcolor{white}{\phantom{A}}} & Major thoroughfares & $17181$ \\
+% $14$ & \colorbox[rgb]{0.54, 0.  , 0.04}{\textcolor{white}{\phantom{A}}} & Highways & $0$ \\
+% $15$ & \colorbox[rgb]{1.  , 0.65, 0.07}{\textcolor{white}{\phantom{A}}} & Railways & $0$ \\
+% $16$ & \colorbox[rgb]{1.,1.,0.}{\textcolor{white}{\phantom{A}}} & Paved parking lots & $7677$ \\
+% $17$ & \colorbox[rgb]{0.92, 0.44, 0.}{\textcolor{white}{\phantom{A}}} & Unpaved parking lots & $0$ \\
+% $18$ & \colorbox[rgb]{0.98, 0.  , 1.}{\textcolor{white}{\phantom{A}}} & Cars & $0$ \\
+% $19$ & \colorbox[rgb]{0.  , 0.  , 1.}{\textcolor{white}{\phantom{A}}} & Trains & $0$ \\
+% $20$ & \colorbox[rgb]{0.49, 0.76, 0.8}{\textcolor{white}{\phantom{A}}} & Stadium seats & $0$ \\
+% \hline
+% \end{tabular}
+% \end{table}
 
 \begin{figure}[!t]
 \centering
@@ -384,51 +384,51 @@ Models of each type described (as well as benchmark models) were trained and the
 This was done by comparing the output labels for the test nodes to the respective test nodes' GT labels in order to separate correctly and incorrectly classified nodes.
 Each uncertainty metric in turn was then used to measure ROC and PR curve values for various threshold uncertainty metric values and the area under these curves subsequently calculated.
 
-The AUROC and AUPR values measured for the task of misclassification detection can be seen in Table \ref{tab::misc_auroc} and Table \ref{tab::misc_aupr} respectively.
+The AUROC and AUPR values measured for the task of misclassification detection can be seen in Table \ref{tab::misc_auroc}. 
 
-\begin{table}[!t]
+\begin{table*}[!t]
 \renewcommand{\arraystretch}{1.3}
-\caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by the AUROC metric).}
+\caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by AUROC and AUPR).}
 \label{tab::misc_auroc}
 \small
 \begin{center}
-\begin{tabular}{Yccccc}
+\begin{tabular}{Y|ccccc|ccccc}
 \hline
-\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}             \\
-      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
-S-BGCN-T-K (superpixel prior) & $0.676$ & $0.801$ &$0.792$&$0.509$&$0.798$    \\
-S-BGCN-T-K (pixel prior) & $0.908$ & $0.840$ &$0.905$&$0.451$&$\mathbf{0.912}$ \\
-S-BGCN-T & $0.729$ & $0.834$ &$0.869$&$0.618$&$0.861$ \\ 
-S-BGCN & $0.760$ & $0.877$ &$0.894$&$0.623$&$0.886$ \\ 
-S-GCN & $0.729$ & $0.842$ &-&-&$0.859$ \\ 
-S-MLP &$0.845$&$0.904$&-&-&$0.909$ \\
-GCN & - & - &-&-&$0.887$ \\ 
-Drop-GCN & - & - &$0.897$&$0.552$&$0.887$ \\ \hline
+\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}\vline&\multicolumn{5}{c}{AUPR}        \\
+                        & Vac. & Dis. & Ale. & Epi. & Ent. & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+S-BGCN-T-K (superpixel prior) & $0.676$ & $0.801$ &$0.792$&$0.509$&$0.798$&0.352&0.398&0.467&0.237&0.474    \\
+S-BGCN-T-K (pixel prior) & $0.908$ & $0.840$ &$0.905$&$0.451$&$\mathbf{0.912}$&0.659&0.545&0.649&0.206&0.672  \\
+S-BGCN-T & $0.729$ & $0.834$ &$0.869$&$0.618$&$0.861$&0.451&0.484&0.591&0.278&0.579  \\ 
+S-BGCN & $0.760$ & $0.877$ &$0.894$&$0.623$&$0.886$&0.489&0.558&0.633&0.268&0.616  \\ 
+S-GCN & $0.729$ & $0.842$ &-&-&$0.859$&0.472&0.538&-&-&0.595  \\ 
+S-MLP &$0.845$&$0.904$&-&-&$0.909$&0.417&0.566&-&-&0.606  \\
+GCN & - & - &-&-&$0.887$&-&-&-&-&0.606  \\ 
+Drop-GCN & - & - &$0.897$&$0.552$&$0.887$&-&-&0.619&0.243&0.600  \\ \hline
 \end{tabular}
 \end{center}
-\end{table}
+\end{table*}
 
-\begin{table}[!t]
-\renewcommand{\arraystretch}{1.3}
-\caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by the AUPR metric).}
-\label{tab::misc_aupr}
-\small
-\begin{center}
-\begin{tabular}{Yccccc}
-\hline
-\multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
-      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
-S-BGCN-T-K (superpixel prior) & $0.352$&$0.398$&$0.467$&$0.237$&$0.474$ \\
-S-BGCN-T-K (pixel prior) & $0.659$&$0.545$&$0.649$&$0.206$&$\mathbf{0.672}$ \\
-S-BGCN-T & $0.451$&$0.484$&$0.591$&$0.278$&$0.579$ \\ 
-S-BGCN & $0.489$ & $0.558$  &$0.633$&$0.268$&$0.616$ \\ 
-S-GCN & $0.472$ & $0.538$  &-&-&$0.595$ \\ 
-S-MLP & $0.417$&$0.566$&-&-&$0.616$ \\
-GCN & - & -  &-&-&$0.606$ \\ 
-Drop-GCN & - & -  & $0.619$&$0.243$&$0.600$ \\ \hline
-\end{tabular}
-\end{center}
-\end{table}
+% \begin{table*}[!t]
+% \renewcommand{\arraystretch}{1.3}
+% \caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by the AUPR metric).}
+% \label{tab::misc_aupr}
+% \small
+% \begin{center}
+% \begin{tabular}{cccccc}
+% \hline
+% \multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
+%       & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
+% S-BGCN-T-K (superpixel prior) & $0.352$&$0.398$&$0.467$&$0.237$&$0.474$ \\
+% S-BGCN-T-K (pixel prior) & $0.659$&$0.545$&$0.649$&$0.206$&$\mathbf{0.672}$ \\
+% S-BGCN-T & $0.451$&$0.484$&$0.591$&$0.278$&$0.579$ \\ 
+% S-BGCN & $0.489$ & $0.558$  &$0.633$&$0.268$&$0.616$ \\ 
+% S-GCN & $0.472$ & $0.538$  &-&-&$0.595$ \\ 
+% S-MLP & $0.417$&$0.566$&-&-&$0.616$ \\
+% GCN & - & -  &-&-&$0.606$ \\ 
+% Drop-GCN & - & -  & $0.619$&$0.243$&$0.600$ \\ \hline
+% \end{tabular}
+% \end{center}
+% \end{table*}
 
 The S-BGCN-T-K model trained using the pixel prior achieves the highest ranked misclassification detection performance, with the uncertainty measured by entropy providing the best distinguishing metric, with AUROC and AUPR of $0.912$ and $0.672$ respectively, closely followed by the performance achieved by the measures of vacuity (AUROC and AUPR of $0.908$ and $0.659$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.905$ and $0.649$ respectively).
 The performance seen for the S-BGCN-T-K model trained using the superpixel prior is markedly lower, with its best-detecting uncertainty metrics (dissonance and aleatoric uncertainty) not exceeding AUROC and AUPR of $0.801$ and $0.467$ respectively.
@@ -512,7 +512,7 @@ This can be seen by comparing the S-BGCN-T-K misclassification detection and OOD
 Of the uncertainty measures produced by the presented S-BGCN-T-K model, the measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance for the task of identifying misclassifications.
 In order to identify OOD nodes, the measure of vacuity stands out as the best-performing   uncertainty metric.
 
-Future work should consider the generalisation potential of this method by considering its performance on other challenging remote sensing classification datasets. There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter $\sigma$ or by assessing a variety of entirely different function.
+Future work should consider the generalisation potential of this method by considering its performance on other challenging remote sensing classification datasets. There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter $\sigma$ or considering different prior computation methods entirely.
 %% The acknowledgments section is defined using the "acknowledgments" environment
 %% (and NOT an unnumbered section). This ensures the proper
 %% identification of the section in the article metadata, and the
