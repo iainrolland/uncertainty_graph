@@ -57,9 +57,9 @@ twocolumn,
 \address[1]{Department of Engineering, University of Cambridge, Cambridge, CB2 1PZ United Kingdom}
 \address[2]{Department of Physics and Technology, UiT the Arctic University of Norway, P.O. box 6050 Langnes, NO-9037, Tromsø, Norway}
 
-\author[1]{A Nother}[orcid=0000-0001-7116-9338, email=another@vu.nl,]
+\author[1]{A Nother}[orcid=0000-0000-0000-0000, email=another@vu.nl,]
 
-\author[1]{A Nother}[orcid=0000-0002-9421-8566,email=another@acm.org,]
+\author[1]{A Nother}[orcid=0000-0000-0000-0000,email=another@acm.org,]
 
 % The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
@@ -88,13 +88,18 @@ The capability of algorithms to provide accurate measures of confidence and unce
 Although deep learning methods are often capable of producing high-accuracy predictions \cite{LeCun2015, LiangpeiZhang2016}, they are generally criticised for being unable to express when to have confidence in the prediction and when the prediction should be presented as uncertain.
 If deep learning models are to be integrated reliably into real-world decision making processes, it is of vital importance that the methods being used are capable of accurately expressing uncertainty.
 
-ANOTHER PARAGRAPH OR TWO HERE!
+With remotely-sensed data being available with ever-greater temporal and spatial resolutions, the development of computational processing methods which are capable of robustly handling such large volumes of data will assist countless earth-monitoring applications. 
+Specifically, with data being captured now using a wide range of capturing techniques with complementary strengths, the ability to combine this data into a multimodal analysis will allow each data mode to interact synergistically to provide better results than any individual data mode would produce in isolation.
+Each data capturing technique will naturally have its own strengths and weaknesses, inherent to the physically properties of the sensing mode.
+Deterministic classification is only useful up to a point.
+Adoption of such techniques will always be limited by the adopter's trust in the predictions.
+Uncertainty estimates will greatly assist trust in models as it will provide a quantification of confidence that might indicate when a prediction is not to be trusted, and more importantly, when a prediction is given with great certainty.
 
-The remainder of this paper is organised as follows: Section \ref{sec::related_work} contains a summary of related research into uncertainty-aware remote sensing classification methods, Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::networks} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarises and draws conclusions as well as suggests areas for future work.
+In this paper, we have analysed how well different measures of model uncertainty perform the task of identifying misclassifications, as well as whether they can be used to identify data points which belong from a distribution other than those observed during training (out of distribution detection).
+To do so, we have used graph-based neural network architectures that are adapted to provide subjective opinions \cite{Kipf2017, ZhaoXujiang2020}, as described in the field of belief or evidence theory \cite{Josang2018}.
+Adopting such a method for performing multimodal classification of remote sensing data is, to the best of our knowledge, an as-yet untested approach. The performance of the adopted technique represents a promising avenue in the search for meaningful uncertainty estimates when performing multimodal remote sensing classification.
 
-\section{Related Work}
-\label{sec::related_work}
-TBW.
+The remainder of this paper is organised as follows: Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::networks} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarises and draws conclusions as well as suggests areas for future work.
 
 \section{Uncertainty framework}
 \label{sec::unc_framework}
@@ -517,9 +522,9 @@ Future work should consider the generalisation potential of this method by consi
 %% (and NOT an unnumbered section). This ensures the proper
 %% identification of the section in the article metadata, and the
 %% consistent spelling of the heading.
-\begin{acknowledgments}
-  Thanks to ...
-\end{acknowledgments}
+% \begin{acknowledgments}
+%   Thanks to ...
+% \end{acknowledgments}
 
 % Define the bibliography file to be used
 \bibliography{bibtex/bib/IEEEabrv, bibtex/bib/imrolland}
