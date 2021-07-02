@@ -96,7 +96,7 @@ Adoption of such techniques will always be limited by the adopter's trust in the
 Uncertainty estimates will greatly assist trust in models as it will provide a quantification of confidence that might indicate when a prediction is not to be trusted, and more importantly, when a prediction is given with great certainty.
 
 In this paper, we have analysed how well different measures of model uncertainty perform the task of identifying misclassifications, as well as whether they can be used to identify data points which belong from a distribution other than those observed during training (out of distribution detection).
-To do so, we have used graph-based neural network architectures that are adapted to provide subjective opinions \cite{Kipf2017, ZhaoXujiang2020}, as described in the field of belief or evidence theory \cite{Josang2018}.
+To do so, we have used graph-based neural network architectures that are adapted to provide subjective opinions (as described in the field of belief or evidence theory \cite{Josang2018}) through the use of Dirichlet distribution parameterizations \cite{Kipf2017, ZhaoXujiang2020}.
 Adopting such a method for performing multimodal classification of remote sensing data is, to the best of our knowledge, an as-yet untested approach. The performance of the adopted technique represents a promising avenue in the search for meaningful uncertainty estimates when performing multimodal remote sensing classification.
 
 The remainder of this paper is organised as follows: Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::networks} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarises and draws conclusions as well as suggests areas for future work.
@@ -104,10 +104,12 @@ The remainder of this paper is organised as follows: Section \ref{sec::unc_frame
 \section{Uncertainty framework}
 \label{sec::unc_framework}
 
+The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets (e.g. Cora/Pubmed). The method they present has been adapted in order to perform the task of multimodal remote sensing classification.
+
 \subsection{Subjective Logic}
-In order to understand the mapping between Dirichlet distributions and uncertainty estimates, it is first necessary to describe the Subjective Logic (SL) framework.
-The uncertainty reasoning described by SL takes an evidence-based approach to decision making \cite{Josang2016}.
-Expressing an opinion using measured quantities of belief allows the distinction to be made between uncertainty due to a lack of evidence (vacuity) or uncertainty due to the presence of conflicting evidence (dissonance).
+Before describing how a model which can produce subjective opinions as its output can be trained, it is first important to understand what these opinions can be constructed.
+Subjective Logic (SL), takes an evidence-based approach to decision making \cite{Josang2016}.
+Expressing an opinion using measured quantities of belief allows the distinction to be made between uncertainty due to a lack of evidence (vacuity) and uncertainty due to the presence of conflicting evidence (dissonance).
 A multinomial opinion, $\omega$, can be expressed as $\omega=\left(\mathbf{b}, u, \mathbf{a}\right)$, where $\mathbf{b}$ is a belief mass vector, the scalar $u$ is the uncertainty mass and $\mathbf{a}$ is the base rate vector.
 For an output, $\mathbf{y}$, of dimension K
 \begin{equation}
@@ -124,7 +126,7 @@ Given that for the base rate vector $\sum_{k=1}^Ka_k=1$, an additivity requireme
 \end{equation}
 
 \subsection{Dirichlet mapping}
-If $\mathbf{p}$ is a K-dimensional random vector containing the probability of belonging to each output class, and $\boldsymbol{\alpha}$ is the strength vector which parameterizes the Dirichlet distribution, the probability density function of the Dirichlet is given by
+If $\mathbf{p}$ is a K-dimensional random vector containing the probability of belonging to each output class, and $\boldsymbol{\alpha}$ is the strength vector which parameterizes a Dirichlet distribution, the probability density function of the Dirichlet is given by
 \begin{equation}
     \textrm{Dir}(\mathbf{p}|\boldsymbol{\alpha})= \frac{\Gamma(\sum_{k=1}^K\alpha_k)}{\prod_{k=1}\alpha_k}\prod_{k=1}^Kp_k^{\alpha_k-1},
 \end{equation}
@@ -144,9 +146,9 @@ and
 \end{equation}
 respectively, where $S$ refers to the Dirichlet strength, then by equating the probability projection of (\ref{eq:prob_projection}) with the expected value of the Dirichlet distribution given by (\ref{eq:expected_dir}), the expression for the belief mass can be obtained as
 \begin{equation}
-    b_k = \frac{\alpha_k-1}{S},
+    b_k = \frac{\alpha_k-1}{S}.
 \end{equation}
-which completes the mapping from Dirichlet distribution to SL opinion.
+This provides us with everything needed in order to map from a Dirichlet distribution to a SL opinion and vice versa.
 \subsection{Uncertainty measures}
 From the definitions of the evidential uncertainties presented in \cite{Josang2018}, the measures of vacuity and dissonance have been adopted.
 The measure of vacuity uncertainty is simply given by the uncertainty mass, i.e.
@@ -171,7 +173,7 @@ The total entropy, made up of both aleatoric and epistemic uncertainty \cite{Dep
     \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right),
 \end{equation}
 where $\mathcal{H}()$ computes the differential entropy of a distribution.
-Aleatoric uncertainty, which accounts for noise inherent to the data observations and cannot be reduced with extra samples \cite{Kendall2017}, is given by
+Aleatoric uncertainty, which accounts for noise inherent to the data observations \cite{Kendall2017}, is given by
 \begin{equation}
     \mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right].
 \end{equation}
@@ -185,7 +187,7 @@ In order to compute the above expressions for aleatoric and epistemic uncertaint
 \section{Networks}
 \label{sec::networks}
 \subsection{Graph convolutional networks}
-The problem involves a graph with $N$ nodes described by an adjacency matrix $\mathbf{A}\in\mathbb{R}^{N\times N}$ and node features $\mathbf{X}\in\mathbb{R}^{N\times C}$, where $C$ denotes the number of channels in the input which describes each node.
+The problem involves a graph with $N$ nodes described by an adjacency matrix $\mathbf{A}\in\mathbb{R}^{N\times N}$ and node features $\mathbf{X}\in\mathbb{R}^{N\times C}$, where $C$ denotes the number of channels in the input describing each node.
 The graph's degree matrix, $\mathbf{D}\in\mathbb{R}^{N\times N}$, is a diagonal matrix with elements given by $\mathbf{D}_{ii}=\sum_j\mathbf{A}_{ij} $.
 For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
 Using the first-order approximation to spectral graph convolution derived by \cite{Kipf2017}, the graph convolutional layer is given by
