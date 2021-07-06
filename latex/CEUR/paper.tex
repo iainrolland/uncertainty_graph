@@ -274,7 +274,7 @@ S-BGCN-T-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{T}}\mathcal{L}_{\t
 \section{Results and analysis}
 \label{sec::results}
 \subsection{Data}
-A subsection of the 2018 IEEE GRSS Data Fusion Challenge dataset was selected for the purposes of validating the described methods as a means for obtaining uncertainty aware classifications.
+A subsection of the 2018 IEEE GRSS Data Fusion Challenge dataset was selected for the purposes of validating the described methods.
 The ground truth labels in this dataset describe 20 different urban land cover/land use classes (i.e. $K=20$) as well as an unlabelled state, described as Unclassified.
 The modes of input data represent measurements from three sensor types: LiDAR, optical and hyperspectral (HS).
 The LiDAR data was provided at $0.5$ m resolution, the same resolution as the ground truth labels (GT).
@@ -330,17 +330,17 @@ The graph, which contains approximately 2.16 million nodes, was computed with $k
 \label{fig::gt}
 \end{figure}
 
-In order to divide the annotations into a training, a validation and a test set, any adjacent pixels with the same label were considered part of one contiguous label block.
-Before randomly allocating these contiguous label blocks into the different sets, the blocks were separated along grid lines in order to prevent any particularly large contiguous blocks from skewing its set into having an over-representation of that class (see Figure \ref{fig::dataset_split} for a visual depiction of a random split).
-The set of contiguous blocks obtained after splitting along these arbitrary grid lines were then randomly allocated into training, validation and test sets with proportions of 40\%, 30\% and 30\% respectively.
-This method of assigning contiguous blocks into a split together as opposed to randomly splitting pixels was done so as to reduce the number of strongly correlated samples (due to local spatial correlations in the input vectors) across the test/validation/test sets which would come with having pixels of immediate proximity split into different sets.
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{figures/dataset_split.jpg}
-\caption{RGB data channels with overlaying colors used to depict a random dataset split with the red, green and blue overlay colors representing training, validation and test set pixels respectively.}
-\label{fig::dataset_split}
-\end{figure}
+% In order to divide the annotations into a training, a validation and a test set, any adjacent pixels with the same label were considered part of one contiguous label block.
+% Before randomly allocating these contiguous label blocks into the different sets, the blocks were separated along grid lines in order to prevent any prevent large contiguous blocks from skewing class balances between sets (see Figure \ref{fig::dataset_split} for a depiction of a random split).
+% The resulting set of blocks were then randomly allocated into training, validation and test sets with proportions of 40\%, 30\% and 30\% respectively.
+% This method of assigning contiguous blocks into a split together as opposed to randomly splitting pixels was done so as to reduce the number of strongly correlated samples (due to local spatial correlations in the input vectors) across the test/validation/test sets which would come with having pixels of immediate proximity split into different sets.
+% 
+% \begin{figure}[!t]
+% \centering
+% \includegraphics[width=\columnwidth]{figures/dataset_split.jpg}
+% \caption{RGB data channels with overlaying colors used to depict a random dataset split with the red, green and blue overlay colors representing training, validation and test set pixels respectively.}
+% \label{fig::dataset_split}
+% \end{figure}
 
 \subsection{Network training and hyperparameters}
 Models were implemented and trained using the TensorFlow library \cite{Abadi2015}.
@@ -424,7 +424,7 @@ By training models using only a subset of the classes provided by the GT, with t
 Using the same approach as described for misclassification detection, the AUROC and AUPR can be calculated for each uncertainty output provided by each model type, in order to determine the relative performance of the respective metrics for this task.
 
 In the results presented, two classes were randomly selected to act as OOD.
-This was repeated 10 times, with two new randomly sampled classes selected for each training and evaluation loop in order that the variation in OOD detection performance due to the nature of the classes selected as OOD could be averaged out and the mean and standard deviation of performance presented.
+This was repeated 10 times, with two new randomly sampled classes selected for each training and evaluation loop in order that the variation in OOD detection performance due to the nature of the classes selected as OOD could be averaged out and the mean and standard deviation computed.
 Each model type was assessed over the same 10 sampled OOD class pairs for fairness.
 The AUROC and AUPR values measured can be found in Table \ref{tab::ood_auroc} and Table \ref{tab::ood_aupr} respectively.
 
@@ -472,9 +472,9 @@ Drop-GCN & - & -  & $0.116\pm0.179$&$0.115\pm0.257$&$0.116\pm0.179$    \\ \hline
 \end{center}
 \end{table*}
 
-As for the task of misclassification detection, the S-BGCN-T-K model trained using the pixel prior is the highest ranked model.
+As for the task of misclassification detection, the S-BGCN-T-K model is the highest ranked model.
 Its measure of vacuity uncertainty provided the best distinguishing metric, with mean AUROC and AUPR of $0.882$ and $0.318$ respectively, closely followed by performance from the measures of entropy (AUROC and AUPR of $0.878$ and $0.316$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.877$ and $0.316$ respectively).
-The performance of the S-BGCN-T-K model trained using the pixel prior stands out above the performance of other models trained.
+The performance of the S-BGCN-T-K model stands out above the performance of other models trained.
 This highlights the importance of describing a meaningful prior in advance for the purposes of achieving improved uncertainty estimates.
 
 The fact that vacuity is the uncertainty measure which best distinguishes OOD nodes for either form of S-BGCN-T-K model reflects intuition.
