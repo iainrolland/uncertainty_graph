@@ -104,24 +104,25 @@ The remainder of this paper is organised as follows: Section \ref{sec::unc_frame
 \section{Uncertainty framework}
 \label{sec::unc_framework}
 
-The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets (e.g. Cora/Pubmed). The method they present has been adapted in order to perform the task of multimodal remote sensing classification.
+The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets including Cora and Pubmed. The method they present has been adapted in order to perform the task of multimodal remote sensing classification.
 
 \subsection{Subjective Logic}
 Subjective Logic (SL), takes an evidence-based approach to decision making \cite{Josang2016}.
 Expressing an opinion using measured quantities of belief allows the distinction to be made between uncertainty due to a lack of evidence (vacuity) and uncertainty due to the presence of conflicting evidence (dissonance).
 A multinomial opinion, $\omega$, can be expressed as $\omega=\left(\mathbf{b}, u, \mathbf{a}\right)$, where $\mathbf{b}$ is a belief mass vector, the scalar $u$ is the uncertainty mass and $\mathbf{a}$ is the base rate vector.
-For an output, $\mathbf{y}$, of dimension K
+For a $K$-class classification problem, $\mathbf{y}$, $\mathbf{a}$ and $\mathbf{b}$ are all vectors of dimension $K$.
+A projection of $\omega$ onto a probability distribution can be made according to
 \begin{equation}
-    \mathbf{b}\in\mathbb{R}^K,\quad\mathbf{a}\in\mathbb{R}^K,\quad\mathbf{y}\in\mathbb{R}^K.
+  P(y=k) = b_k + a_ku.
+  \label{eq:prob_projection}
 \end{equation}
-A projection of $\omega$ onto a probability distribution can be made according to $P(y=k) = b_k + a_ku$.
 It follows that since $\sum_{k=1}^Ka_k=1$ for the base rate vector, an additivity requirement is described by
 \begin{equation}
     u+\sum_{k=1}^K b_k=1.
 \end{equation}
 
 \subsection{Dirichlet mapping}
-If $\mathbf{p}$ is a K-dimensional random vector containing the probability of belonging to each output class, and $\boldsymbol{\alpha}$ is the strength vector which parameterizes a Dirichlet distribution, the probability density function of the Dirichlet is given by
+If $\mathbf{p}$ is a $K$-dimensional random vector containing the probability of belonging to each output class, and $\boldsymbol{\alpha}$ is the strength vector which parameterizes a Dirichlet distribution, the probability density function of the Dirichlet is given by
 \begin{equation}
     \textrm{Dir}(\mathbf{p}|\boldsymbol{\alpha})= \frac{\Gamma(\sum_{k=1}^K\alpha_k)}{\prod_{k=1}\alpha_k}\prod_{k=1}^Kp_k^{\alpha_k-1},
 \end{equation}
@@ -198,7 +199,7 @@ For brevity, the tilde operator is used to represent the inclusion of self-conne
 An adaptation to the GCN architecture used by \cite{Kipf2017} must be made in order to obtain subjective opinions that will be used to obtain measures of vacuity and dissonance uncertainty.
 The adaptation made means that the model will output node-level Dirichlet distribution parameters, such that the output will provide a probability distribution over multinomial class probabilities for each node.
 To do so, the softmax output activation function used in the output layer of the GCN is substituted for a ReLU function.
-In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the K-dimensional concentration parameters of the $\text{i}^\text{th}$ node.
+In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the $K$-dimensional concentration parameters of the $\text{i}^\text{th}$ node.
 In order to train such a model, the loss function is made up of two components; a squared error term which is minimised in order to classify a greater proportion of the nodes correctly and a variance term which is minimized to incentivize the model to provide confident predictions where possible.
 This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
 \begin{equation}
@@ -379,8 +380,8 @@ Models of each type described (as well as benchmark models) were trained and the
 \hline
 \multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}\vline&\multicolumn{5}{c}{AUPR}        \\
                         & Vac. & Dis. & Ale. & Epi. & Ent. & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
-S-BGCN-T-K (superpixel prior) & $0.676$ & $0.801$ &$0.792$&$0.509$&$0.798$&$0.352$&$0.398$&$0.467$&$0.237$&$0.474$    \\
-S-BGCN-T-K (pixel prior) & $0.908$ & $0.840$ &$0.905$&$0.451$&$\mathbf{0.912}$&$0.659$&$0.545$&$0.649$&$0.206$&$\mathbf{0.672}$  \\
+% S-BGCN-T-K (superpixel prior) & $0.676$ & $0.801$ &$0.792$&$0.509$&$0.798$&$0.352$&$0.398$&$0.467$&$0.237$&$0.474$    \\
+S-BGCN-T-K  & $0.908$ & $0.840$ &$0.905$&$0.451$&$\mathbf{0.912}$&$0.659$&$0.545$&$0.649$&$0.206$&$\mathbf{0.672}$  \\
 S-BGCN-T & $0.729$ & $0.834$ &$0.869$&$0.618$&$0.861$&$0.451$&$0.484$&$0.591$&$0.278$&$0.579$  \\ 
 S-BGCN & $0.760$ & $0.877$ &$0.894$&$0.623$&$0.886$&$0.489$&$0.558$&$0.633$&$0.268$&$0.616$  \\ 
 S-GCN & $0.729$ & $0.842$ &-&-&$0.859$&$0.472$&$0.538$&-&-&$0.595$  \\ 
@@ -413,8 +414,7 @@ Drop-GCN & - & - &$0.897$&$0.552$&$0.887$&-&-&$0.619$&$0.243$&$0.600$  \\ \hline
 % \end{center}
 % \end{table*}
 
-The S-BGCN-T-K model trained using the pixel prior achieves the highest ranked misclassification detection performance, with the uncertainty measured by entropy providing the best distinguishing metric, with AUROC and AUPR of $0.912$ and $0.672$ respectively, closely followed by the performance achieved by the measures of vacuity (AUROC and AUPR of $0.908$ and $0.659$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.905$ and $0.649$ respectively).
-The performance seen for the S-BGCN-T-K model trained using the superpixel prior is markedly lower, with its best-detecting uncertainty metrics (dissonance and aleatoric uncertainty) not exceeding AUROC and AUPR of $0.801$ and $0.467$ respectively.
+The S-BGCN-T-K model trained achieves the highest ranked misclassification detection performance, with the uncertainty measured by entropy providing the best distinguishing metric, with AUROC and AUPR of $0.912$ and $0.672$ respectively, closely followed by the performance achieved by the measures of vacuity (AUROC and AUPR of $0.908$ and $0.659$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.905$ and $0.649$ respectively).
 
 \subsection{Out of distribution detection}
 
@@ -434,12 +434,12 @@ The AUROC and AUPR values measured can be found in Table \ref{tab::ood_auroc} an
 \label{tab::ood_auroc}
 \scriptsize
 \begin{center}
-\begin{tabular}{Yccccc}
+\begin{tabular}{Y|ccccc}
 \hline
 \multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUROC}             \\
-      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
-S-BGCN-T-K (superpixel prior) & $0.839\pm0.092$ & $0.691\pm0.173$ &$0.831\pm0.079$&$0.268\pm0.180$&$0.833\pm0.076$    \\           
-S-BGCN-T-K (pixel prior) & $\mathbf{0.882\pm0.085}$ & $0.605\pm0.197$ &$0.877\pm0.089$&$0.193\pm0.107$&$0.878\pm0.089$    \\        
+      & Vacuity & Dissonance & Aleatoric & Epistemic & Entropy \\ \hline 
+% S-BGCN-T-K (superpixel prior) & $0.839\pm0.092$ & $0.691\pm0.173$ &$0.831\pm0.079$&$0.268\pm0.180$&$0.833\pm0.076$    \\           
+S-BGCN-T-K & $\mathbf{0.882\pm0.085}$ & $0.605\pm0.197$ &$0.877\pm0.089$&$0.193\pm0.107$&$0.878\pm0.089$    \\        
 S-BGCN-T & $0.588\pm0.147$ & $0.664\pm0.133$ &$0.593\pm0.188$&$0.396\pm0.096$&$0.578\pm0.186$    \\ 
 S-BGCN & $0.586\pm0.147$ & $0.666\pm0.132$ &$0.596\pm0.193$&$0.401\pm0.092$&$0.580\pm0.191$    \\ 
 S-GCN & $0.580\pm0.145$ & $0.650\pm0.120$ &-&-&$0.586\pm0.181$    \\ 
@@ -456,12 +456,12 @@ Drop-GCN & - & - &$0.541\pm0.185$&$0.420\pm0.161$&$0.538\pm0.187$    \\ \hline
 \label{tab::ood_aupr}
 \scriptsize
 \begin{center}
-\begin{tabular}{Yccccc}
+\begin{tabular}{Y|ccccc}
 \hline
 \multirow{2}{*}{Model}  & \multicolumn{5}{c}{AUPR}             \\
-      & Vac. & Dis. & Ale. & Epi. & Ent. \\ \hline 
-S-BGCN-T-K (superpixel prior) &$0.234\pm0.252$&$0.142\pm0.185$&$0.214\pm0.249$&$0.099\pm0.227$&$0.212\pm0.251$    \\   
-S-BGCN-T-K (pixel prior) &$\mathbf{0.318\pm0.289}$&$0.132\pm0.184$&$0.316\pm0.306$&$0.082\pm0.178$&$0.316\pm0.306$    \\        
+      & Vacuity & Dissonance & Aleatoric & Epistemic & Entropy \\ \hline 
+% S-BGCN-T-K (superpixel prior) &$0.234\pm0.252$&$0.142\pm0.185$&$0.214\pm0.249$&$0.099\pm0.227$&$0.212\pm0.251$    \\   
+S-BGCN-T-K &$\mathbf{0.318\pm0.289}$&$0.132\pm0.184$&$0.316\pm0.306$&$0.082\pm0.178$&$0.316\pm0.306$    \\        
 S-BGCN-T &$0.128\pm0.187$&$0.137\pm0.192$&$0.148\pm0.211$&$0.095\pm0.193$&$0.143\pm0.208$    \\ 
 S-BGCN & $0.127\pm0.186$ & $0.139\pm0.190$  &$0.150\pm0.213$&$0.095\pm0.195$&$0.145\pm0.209$    \\ 
 S-GCN & $0.125\pm0.185$ & $0.130\pm0.191$  &-&-&$0.143\pm0.207$    \\ 
@@ -472,11 +472,10 @@ Drop-GCN & - & -  & $0.116\pm0.179$&$0.115\pm0.257$&$0.116\pm0.179$    \\ \hline
 \end{center}
 \end{table*}
 
-As for the task of misclassification detection, the S-BGCN-T-K model trained using the pixel prior is also the highest ranked model for the task of OOD detection.
+As for the task of misclassification detection, the S-BGCN-T-K model trained using the pixel prior is the highest ranked model.
 Its measure of vacuity uncertainty provided the best distinguishing metric, with mean AUROC and AUPR of $0.882$ and $0.318$ respectively, closely followed by performance from the measures of entropy (AUROC and AUPR of $0.878$ and $0.316$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.877$ and $0.316$ respectively).
-While competitive performance was observed across a number of the model types trained for the task of misclassification detection, in the task of OOD detection the performance of the S-BGCN-T-K model trained using the pixel prior stands out above others.
+The performance of the S-BGCN-T-K model trained using the pixel prior stands out above the performance of other models trained.
 This highlights the importance of describing a meaningful prior in advance for the purposes of achieving improved uncertainty estimates.
-While the S-BGCN-T-K model trained using the superpixel prior does not detect OOD nodes quite so successfully, it still seems to benefit from the use of the prior as it achieves next-best performance (with its measure of vacuity giving a mean AUROC and AUPR of $0.839$ and $0.234$ respectively), perhaps also alongside the S-MLP (with its measure of dissonance giving a mean AUROC and AUPR of $0.805$ and $0.233$ respectively).
 
 The fact that vacuity is the uncertainty measure which best distinguishes OOD nodes for either form of S-BGCN-T-K model reflects intuition.
 Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which vacuity is likely higher.
