@@ -182,7 +182,7 @@ The epistemic uncertainty, therefore, is given by the difference between these t
     \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right)-\mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right].
 \label{eq::epistemic}
 \end{equation}
-In order to compute the above expressions for aleatoric and epistemic uncertainty, the posterior distribution over models is approximated by samples obtained using dropout inference \cite{Gal2016} as is described in Section \ref{sec::dropout_bayesian}.
+In order to compute the above expressions for aleatoric and epistemic uncertainty, the posterior distribution over models is approximated by samples obtained using dropout inference \cite{Gal2016}.
 
 \section{Networks}
 \label{sec::networks}
@@ -211,19 +211,6 @@ This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
 \end{equation}
 where $i\in\mathbb{L}$ refers to the fact that the loss is computed using a sum only over nodes in the training set, $\mathbb{L}$.
 Models trained with such an output activation and loss function will be denoted using the `S-' prefix in order to indicate they provide subjective predictions, e.g. S-GCN.
-\subsection{Dropout inference as a Bayesian approximation}
-\label{sec::dropout_bayesian}
-It has been shown that a model with dropout can be considered to represent the posterior distribution over models \cite{Gal2016}.
-The dropouts are used to represent stochasticity in the model parameters \cite{Ryu2019}.
-A given combination of dropouts can be considered to represent a model sampled from the approximate posterior, $q(\boldsymbol{\theta})$, with the actual posterior distribution of models being $p(\boldsymbol{\theta}|\mathcal{D})$.
-Monte Carlo sampling can be used to approximately compute quantities such as the term $\mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]$ in (\ref{eq::epistemic}) allowing the aleatoric and epistemic uncertainty to be calculated.
-This can be done using the approximation 
-\begin{equation}
-    \mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right]\approx\frac{1}{M}\sum_{m=1}^M \mathcal{H}\left(p(y\vert x; \boldsymbol{\theta}^m)\right),
-\end{equation}
-where $\boldsymbol{\theta}^m\sim q(\boldsymbol{\theta})$ is a model sampled by performing dropout inference.
-When this technique has been used, the model name represents this using a `B' in its name, e.g. S-BGCN, showing that this Bayesian approximation has been used.
-The Drop-GCN model, which is used for benchmarking the subjective methods, refers to the same technique when applied to a `vanilla' GCN.
 
 \subsection{Convergence assistance techniques}
 In order to assist the convergence of subjective models, two additional assistance techniques have been used: teacher knowledge distillation and the use of a Dirichlet prior.
