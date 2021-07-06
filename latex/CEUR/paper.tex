@@ -107,7 +107,6 @@ The remainder of this paper is organised as follows: Section \ref{sec::unc_frame
 The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets (e.g. Cora/Pubmed). The method they present has been adapted in order to perform the task of multimodal remote sensing classification.
 
 \subsection{Subjective Logic}
-Before describing how a model which can produce subjective opinions as its output can be trained, it is first important to understand what these opinions can be constructed.
 Subjective Logic (SL), takes an evidence-based approach to decision making \cite{Josang2016}.
 Expressing an opinion using measured quantities of belief allows the distinction to be made between uncertainty due to a lack of evidence (vacuity) and uncertainty due to the presence of conflicting evidence (dissonance).
 A multinomial opinion, $\omega$, can be expressed as $\omega=\left(\mathbf{b}, u, \mathbf{a}\right)$, where $\mathbf{b}$ is a belief mass vector, the scalar $u$ is the uncertainty mass and $\mathbf{a}$ is the base rate vector.
@@ -204,8 +203,8 @@ In order to train an evidential model, the loss function is made up of two compo
 This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
 \begin{equation}
 \begin{split}
-    \mathcal{L}(\boldsymbol{\theta})&=\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\text{Var}(p_{ik})\right],\\
-    &=\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\frac{\left(\frac{\alpha_{ik}}{S_i}\right)\left(1-\frac{\alpha_{ik}}{S_i}\right)}{S_i-K}\right],
+    \mathcal{L}(\boldsymbol{\theta})=\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\text{Var}(p_{ik})\right],\\
+    =\sum_{i\in\mathbb{L}}\sum_k \left[(p_{ik}-y_{ik})^2+\frac{\alpha_{ik}}{S_i^2}\left(\frac{S_i-\alpha_{ik}}{S_i-K}\right)\right],
 \end{split}
 \label{eq:core_loss}
 \end{equation}
