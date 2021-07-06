@@ -186,18 +186,17 @@ In order to compute the above expressions for aleatoric and epistemic uncertaint
 
 \section{Networks}
 \label{sec::networks}
-\subsection{Graph convolutional networks}
 The problem involves a graph with $N$ nodes described by an adjacency matrix $\mathbf{A}\in\mathbb{R}^{N\times N}$ and node features $\mathbf{X}\in\mathbb{R}^{N\times C}$, where $C$ denotes the number of channels in the input describing each node.
 The graph's degree matrix, $\mathbf{D}\in\mathbb{R}^{N\times N}$, is a diagonal matrix with elements given by $\mathbf{D}_{ii}=\sum_j\mathbf{A}_{ij} $.
-For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
-Using the first-order approximation to spectral graph convolution derived by \cite{Kipf2017}, the graph convolutional layer is given by
+
+The graph convolutional networks used are of the form proposed by \cite{Kipf2017}, where the graph convolutional layer is given by
 \begin{equation}
     \mathbf{Z}^{(l+1)}=\sigma\left(\tilde{\mathbf{D}}^{-\frac{1}{2}}\tilde{\mathbf{A}}\tilde{\mathbf{D}}^{-\frac{1}{2}}\mathbf{Z}^{(l)}\boldsymbol{W}^{(l)}\right),
 \label{eq::gcn_layer}
 \end{equation}
 where $\mathbf{Z}^{(l)}$, $\mathbf{Z}^{(l+1)}$ and $\boldsymbol{W}^{(l)}$ are the inputs, outputs and weights of the $\textrm{l}^\textrm{th}$ layer respectively, and $\sigma()$ is a non-linear activation function.
-For the first layer, the weights are $\boldsymbol{W}^{(0)}\in\mathbb{R}^{C\times F}$ and $\mathbf{Z}^{(0)} = \mathbf{X}\in\mathbb{R}^{N\times C}$ where $F$ is the number of features in the layer's output (a hyperparameter of the layer).
-Models referred to as graph convolutional networks (GCNs) from henceforth will refer to a model which consists of two of these layers used in sequence, the first using the rectified linear unit (ReLU) activation function, the second using a softmax activation.
+For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
+
 \subsection{Subjective models}
 In order to obtain models which will give node-level Dirichlet distribution parameters, the softmax output activation function used in a GCN is substituted for a ReLU function.
 In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the K-dimensional concentration parameters of the $\text{i}^\text{th}$ node.
