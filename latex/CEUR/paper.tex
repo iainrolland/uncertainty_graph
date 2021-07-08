@@ -63,12 +63,13 @@ twocolumn,
 
 % The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
-In order to adopt deep learning methods in environments where the decisions being made are high-stakes, it is important to have methods which are capable of producing a quantification of the prediction confidence or uncertainty.
-Graph-based convolutional neural networks which are trained to perform classification of multimodal remote sensing data such that the model output represents a Dirichlet distribution parameterization can also be used to obtain measures of prediction uncertainty.
+In order to adopt deep learning methods in environments where the decisions being made are high-stakes, it is important to have methods which are capable of quantifying the prediction confidence or uncertainty.
+Graph-based convolutional neural networks can be trained to perform classification of multimodal remote sensing data using a model output which represents a Dirichlet distribution parameterization.
+This parameterization can then also be used to obtain measures of prediction uncertainty.
 By making a correspondence between a multinomial opinion, as described by subjective logic, and a Dirichlet distribution parameterization, a direct mapping between the two can be performed.
-A multinomial opinion of this kind can produce quantified measures of uncertainty and distinguishes uncertainty due to a lack of evidence (vacuity) and uncertainty due to conflicting evidence (dissonance).
+A multinomial opinion of this kind can produce quantified measures of uncertainty and distinguish uncertainty due to a lack of evidence (vacuity) and uncertainty due to conflicting evidence (dissonance).
 With an appropriately chosen loss function, the graph-based classifier will converge to provide accurate estimates of uncertainty.
-The results presented in this paper show that the measures of uncertainty provided by such models are capable of better distinguishing model misclassifications as well as out-of-distribution data samples than probabilistic measures of uncertainty produced by deterministic neural networks.
+The results presented in this paper show that the measures of uncertainty provided by such models are capable of better distinguishing model misclassifications as well as out-of-distribution data samples than probabilistic measures of uncertainty produced by equivalent deterministic neural networks.
 \end{abstract}
 
 % Keywords. The author(s) should pick words that accurately describe the work being presented. Separate the keywords with commas.
@@ -91,9 +92,9 @@ If deep learning models are to be integrated reliably into real-world decision m
 With remotely-sensed data being available with ever-greater temporal and spatial resolutions, the development of computational processing methods which are capable of robustly handling such large volumes of data will assist countless earth-monitoring applications. 
 Specifically, with data being captured now using a wide range of capturing techniques with complementary strengths, the ability to combine this data into a multimodal analysis will allow each data mode to interact synergistically to provide better results than any individual data mode would produce in isolation.
 Each data capturing technique will naturally have its own strengths and weaknesses, inherent to the physically properties of the sensing mode.
-Deterministic classification is only useful up to a point.
+Deterministic classification, while useful, is held back by its inability to express uncertainty.
 Adoption of such techniques will always be limited by the adopter's trust in the predictions.
-Uncertainty estimates will greatly assist trust in models as it will provide a quantification of confidence that might indicate when a prediction is not to be trusted, and more importantly, when a prediction is given with great certainty.
+Uncertainty estimates, however, will greatly assist human trust in models as it will provide a quantification of confidence that might indicate when a prediction is not to be trusted, and more importantly, when a prediction is given with great certainty.
 
 In this paper, we have analysed how well different measures of model uncertainty perform the task of identifying misclassifications, as well as whether they can be used to identify data points which belong from a distribution other than those observed during training (out of distribution detection).
 To do so, we have used graph-based neural network architectures that are adapted to provide subjective opinions (as described in the field of belief or evidence theory \cite{Josang2018}) through the use of Dirichlet distribution parameterizations \cite{Kipf2017, ZhaoXujiang2020}.
@@ -146,6 +147,7 @@ respectively, where $S$ refers to the Dirichlet strength, then by equating the p
 \end{equation}
 This provides us with everything needed in order to map from a Dirichlet distribution to a SL opinion and vice versa.
 \subsection{Uncertainty measures}
+\label{sec::UncertaintyMeasures}
 From the definitions of the evidential uncertainties presented in \cite{Josang2018}, the measures of vacuity and dissonance have been adopted.
 The measure of vacuity uncertainty is simply given by the uncertainty mass, i.e.
 \begin{equation}
@@ -163,7 +165,7 @@ where $\textrm{Bal}()$ is a function which gives the relative balance between tw
 \end{equation}
 
 In order assess the relative ability of evidential uncertainties to express different types of doubt, three commonly used probabilistic measures of uncertainty (aleatoric, epistemic and entropy) are computed to provide comparisons.
-For a Bayesian model with inputs, outputs and parameters denoted $x$, $y$ and $\boldsymbol{\theta}$ respectively, the posterior which will be approximated is $p(\boldsymbol{\theta}\vert\mathcal{D})$, where $\mathcal{D}$ is the observed dataset.
+For a Bayesian model with inputs, outputs and parameters denoted $x$, $y$ and $\boldsymbol{\theta}$ respectively, the posterior, which will be approximated, is $p(\boldsymbol{\theta}\vert\mathcal{D})$, where $\mathcal{D}$ is the observed dataset.
 The total entropy, made up of both aleatoric and epistemic uncertainty \cite{Depeweg2018} is given by
 \begin{equation}
     \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right),
@@ -192,15 +194,15 @@ The graph convolutional networks used are of the form proposed by \cite{Kipf2017
     \mathbf{Z}^{(l+1)}=\sigma\left(\tilde{\mathbf{D}}^{-\frac{1}{2}}\tilde{\mathbf{A}}\tilde{\mathbf{D}}^{-\frac{1}{2}}\mathbf{Z}^{(l)}\boldsymbol{W}^{(l)}\right),
 \label{eq::gcn_layer}
 \end{equation}
-where $\mathbf{Z}^{(l)}$, $\mathbf{Z}^{(l+1)}$ and $\boldsymbol{W}^{(l)}$ are the inputs, outputs and weights of the $\textrm{l}^\textrm{th}$ layer respectively, and $\sigma()$ is a non-linear activation function.
+where $\mathbf{Z}^{(l)}$, $\mathbf{Z}^{(l+1)}$ and $\boldsymbol{W}^{(l)}$ are the inputs, outputs and weights of the $l^\textrm{th}$ layer respectively, and $\sigma()$ is a non-linear activation function.
 For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
 
 \subsection{Subjective models}
 An adaptation to the GCN architecture used by \cite{Kipf2017} must be made in order to obtain subjective opinions that will be used to obtain measures of vacuity and dissonance uncertainty.
 The adaptation made means that the model will output node-level Dirichlet distribution parameters, such that the output will provide a probability distribution over multinomial class probabilities for each node.
 To do so, the softmax output activation function used in the output layer of the GCN is substituted for a ReLU function.
-In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the $K$-dimensional concentration parameters of the $\text{i}^\text{th}$ node.
-In order to train such a model, the loss function is made up of two components; a squared error term which is minimised in order to classify a greater proportion of the nodes correctly and a variance term which is minimized to incentivize the model to provide confident predictions where possible.
+In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the $K$-dimensional concentration parameters of the $i^\text{th}$ node.
+In order to train such a model, the loss function is made up of two components: a squared error term, which is minimised in order to classify a greater proportion of the nodes correctly, and a variance term, which is minimized to incentivize the model to provide confident predictions where possible.
 This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
 \begin{equation}
 \begin{split}
@@ -228,7 +230,7 @@ Models trained using a teacher are denoted using the ``-T'' suffix e.g. a S-BGCN
 A second convergence assistance technique which can be used involves the use of a Dirichlet prior, $\hat{\boldsymbol{\alpha}}$.
 The exact method chosen to provide $\hat{\boldsymbol{\alpha}}$ will depend on the nature of the problem but we will assume nodes which are nearby in the graph are more likely to belong to the same output class than nodes which are far apart, a property known as homophily \cite{HuangQian2019}.
 Using this assumption, we can use the computed distances on the graph in order to assign contributions of evidence from observed node labels to the other nodes in the graph using a function of our choosing.
-If $d_{ij}$ denotes the shortest path distance between a given node, indexed by $i$ and an observed node, indexed by $j$, then the amount of evidence contributed to suggest that the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class is given by
+If $d_{ij}$ denotes the shortest path distance between a given node, indexed by $i$ and an observed node, indexed by $j$, then the amount of evidence contributed to suggest that the $i^\text{th}$ node belongs to the $k^\text{th}$ class is given by
 \begin{equation}
     h_{ik}(y_j,d_{ij})=
     \begin{cases}
@@ -237,19 +239,20 @@ If $d_{ij}$ denotes the shortest path distance between a given node, indexed by 
     \end{cases}
 \end{equation}
 where $\sigma$ is a scale parameter which controls the order of distance magnitude over which evidence will propagate in the prior.
-The total evidence to suggest the $\text{i}^\text{th}$ node belongs to the $\text{k}^\text{th}$ class, $e_{ik}$ can be found by summing these contributions over the nodes in the training set such that the element in the prior is given by 
+The total evidence to suggest the $i^\text{th}$ node belongs to the $k^\text{th}$ class, $e_{ik}$ can be found by summing these contributions over the nodes in the training set, such that the element in the prior is given by 
 \begin{equation}
     \hat{\boldsymbol{\alpha}}_{ik}=1+e_{ik}=1+\sum_{j\in\mathbb{L}}h_{ik}(y_j, d_{ij}).
 \end{equation}
-The KL-divergence between the Dirichlet distribution of the prior and the model output can be incorporated into the loss function using the term
+The KL-divergence between the Dirichlet distribution of the prior and the model output is given by the term
 \begin{equation}
     \mathcal{L}_{\text{K}}(\boldsymbol{\theta})=\sum_i\infdiv{\text{Dir}(\mathbf{p}_i\vert\boldsymbol{\alpha}_i)}{\text{Dir}(\hat{\mathbf{p}}_i\vert\hat{\boldsymbol{\alpha}}_i)},
 \label{eq::teacher_loss}
 \end{equation}
-which can, in turn, be incorporated into the total loss.
-Models trained using a prior are denoted using the ``-K'' suffix e.g. a S-BGCN-K model would indicate that the graph convolutional network was trained with a loss function using a weighted combination of the loss in (\ref{eq:core_loss}) and the term described in (\ref{eq::teacher_loss}).
+which can, in turn, be incorporated into the total loss function.
+Models trained using a prior are denoted using the ``-K'' suffix. 
 
 Table \ref{loss_table} shows how these convergence assistance techniques can be weighted and combined in various permutations to provide a total loss function, $\mathcal{L}_\text{total}(\boldsymbol{\theta})$, as well as the model name abbreviations used to denote which combination has been used.
+The "B" in the model names of Table \ref{loss_table} refers to the fact that dropout inference has been used as a Bayesian approximation, as mentioned in Section \ref{sec::UncertaintyMeasures}.
 The coefficients $\lambda_{\text{T}}$ and $\lambda_{\text{K}}$ are used to control the relative importance of the teacher network and the Dirichlet prior respectively against the importance of the subjective loss function given in (\ref{eq:core_loss}).
 These have been considered as hyperparameters which are to be tuned during training.
 
@@ -280,8 +283,8 @@ The modes of input data represent measurements from three sensor types: LiDAR, o
 The LiDAR data was provided at $0.5$ m resolution, the same resolution as the ground truth labels (GT).
 In order to simplify analysis, the optical data (which was provided at $0.05$ m resolution) and the HS data (which was provided at $1.0$ m resolution) were bilinearly resampled to obtain $0.5$ m resolution across inputs and outputs.
 
-The graph was constructed with each $0.5$ m $\times$ $0.5$ m pixels representing a node in the graph.
-Each node has a 52-dimensional feature vector (produced by stacking 3 optical channels, 48 HS channels and 1 LiDAR channel) describing it.
+The graph was constructed with each $0.5$ m $\times$ $0.5$ m pixel representing a node in the graph.
+Each node has a 52-dimensional feature vector describing it (produced by stacking 3 optical channels, 48 HS channels and 1 LiDAR channel).
 The graph edges are computed using a $k$-nearest neighbors algorithm with two nodes receiving an edge connecting them if either node was one of the $k$ nodes which were nearest the other.
 This produces a graph which is both undirected and unweighted.
 The graph, which contains approximately 2.16 million nodes, was computed with $k=15$.
@@ -346,11 +349,11 @@ The graph, which contains approximately 2.16 million nodes, was computed with $k
 Models were implemented and trained using the TensorFlow library \cite{Abadi2015}.
 In order to handle the imbalance of classes in the dataset, sample weighting was used.
 Samples were given weights which were inversely proportional to the number of total samples of each class in the training set.
-These weights were used when computing the loss during training such that the loss related to nodes belonging to under-represented classes were given an increased influence over parameter updates and vice versa.
+These weights were used when computing the loss during training such that the losses related to nodes belonging to under-represented classes were given an increased influence over parameter updates and vice versa.
 
 All GCN-based models were constructed using a dropout layer (dropout probability $0.5$), a graph convolutional layer, as described in (\ref{eq::gcn_layer}), a second dropout layer (dropout probability $0.5$) and a second graph convolutional layer with the relevant output activation function.
 The kernel weights of the first graph convolutional layer were regularized using an $L_2$ penalization.
-Where dropout inference has been used, the number of samples taken, $M$, was 100.
+Where dropout inference has been used, the number of samples taken was 100.
 
 Hyperparameters including the learning rate, the $L_2$ regularization coefficient and the number of GCN layer output features, $F$, were selected via a grid-search method.
 Where used, $\lambda_{\text{T}}$ and $\lambda_{\text{K}}$ were also found using a grid-search.
@@ -365,10 +368,10 @@ Benchmark models presented include the `vanilla' GCN (which can provide uncertai
 \subsection{Misclassification detection}
 
 Given that model uncertainties should provide a measure of the confidence which can be had about a model's predictions, a worthwhile estimate of uncertainty should be able to distinguish model misclassifications from accurate classifications.
-In order to measure a uncertainty output's ability to separate misclassifications, a receiver operating characteristic (ROC) curve and a precision-recall (PR) curve can be computed.
+In order to measure an uncertainty output's ability to separate misclassifications, a receiver operating characteristic (ROC) curve and a precision-recall (PR) curve can be computed.
 The area under the ROC curve and PR curve (AUROC and AUPR respectively) can be used as a single numerical representation of the detection performance, where an area of $1.0$ would represent a perfect discriminator for both metrics.
 
-Models of each type described (as well as benchmark models) were trained and their outputs analysed in produce the AUROC and AUPR values seen in Table \ref{tab::misc_auroc}. 
+Models of each type described (as well as benchmark models) were trained and their outputs analysed in order to produce the AUROC and AUPR values seen in Table \ref{tab::misc_auroc}. 
 
 \begin{table*}[!t]
 \renewcommand{\arraystretch}{1.3}
@@ -419,7 +422,7 @@ The S-BGCN-T-K model trained achieves the highest ranked misclassification detec
 \subsection{Out of distribution detection}
 
 It would also be reasonable to expect that uncertainty should be higher when the model is asked to make a prediction using an input which does not resemble the inputs upon which it was trained.
-The relative inability of neural networks' to successfully extrapolate beyond the support of the training data is a well-known weakness of these methods \cite{Lakshminarayanan2017}.
+The relative inability of neural networks to successfully extrapolate beyond the support of the training data is a well-known weakness of these methods \cite{Lakshminarayanan2017}.
 By training models using only a subset of the classes provided by the GT, with the other classes acting as out of distribution (OOD) samples, the OOD detection ability of the uncertainty metrics can be measured.
 Using the same approach as described for misclassification detection, the AUROC and AUPR can be calculated for each uncertainty output provided by each model type, in order to determine the relative performance of the respective metrics for this task.
 
@@ -475,26 +478,26 @@ Drop-GCN & - & -  & $0.116\pm0.179$&$0.115\pm0.257$&$0.116\pm0.179$    \\ \hline
 As for the task of misclassification detection, the S-BGCN-T-K model is the highest ranked model.
 Its measure of vacuity uncertainty provided the best distinguishing metric, with mean AUROC and AUPR of $0.882$ and $0.318$ respectively, closely followed by performance from the measures of entropy (AUROC and AUPR of $0.878$ and $0.316$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.877$ and $0.316$ respectively).
 The performance of the S-BGCN-T-K model stands out above the performance of other models trained.
-This highlights the importance of describing a meaningful prior in advance for the purposes of achieving improved uncertainty estimates.
+This highlights the importance of the convergence assistance techniques used, particularly the use of a meaningful prior.
 
-The fact that vacuity is the uncertainty measure which best distinguishes OOD nodes for either form of S-BGCN-T-K model reflects intuition.
-Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which vacuity is likely higher.
+The fact that vacuity is the uncertainty measure which best distinguishes OOD nodes reflects intuition.
+Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which the model ought to have little evidence to support its predictions.
 
 \section{Conclusion}
 \label{sec::conclusion}
 
-In this paper we have presented a novel method for providing uncertainties while perfoming multi-class classification of multimodal remote sensing data.
+In this paper we have adapted a novel classification method capable of providing uncertainty estimates to the task of multi-class classification of multimodal remote sensing data.
 The adopted framework, based upon the theory of Subjective Logic, provides measures of vacuity and dissonance which are better capable of identifying misclassifications and out of distribution samples than the alternative probabilistic measures of uncertainty assessed.
 Experimental results have shown the performance of the S-BGCN-T-K model in the tasks of misclassification and OOD detection to be improved against baseline methods.
 This represents a promising avenue for uncertainty-aware learning in the task of multimodal remote sensing classification.
-The development of algorithms which can be used to better distinguish misclassified nodes and OOD nodes and thus can better quantify confidence, is important for real-world applications where the consequences of misplaced model certainty can be high-stake.
 
-The presented results have illustrated an improvement in the quality of uncertainty estimates obtained through the use of a prior.
+The presented results have illustrated the importance of convergence assistance techniques as a means for improving the quality of uncertainty estimates, particularly through the use of a prior.
 This can be seen by comparing the S-BGCN-T-K misclassification detection and OOD detection performance with equivalent models which do not use a prior, e.g. S-BGCN-T.
 Of the uncertainty measures produced by the presented S-BGCN-T-K model, the measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance for the task of identifying misclassifications.
 In order to identify OOD nodes, the measure of vacuity stands out as the best-performing   uncertainty metric.
 
-Future work should consider the generalisation potential of this method by considering its performance on other challenging remote sensing classification datasets. There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter $\sigma$ or considering different prior computation methods entirely.
+Future work should consider the generalisation potential of this method by considering its performance on other challenging remote sensing classification datasets.
+There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter, $\sigma$, or considering different prior computation methods entirely.
 %% The acknowledgments section is defined using the "acknowledgments" environment
 %% (and NOT an unnumbered section). This ensures the proper
 %% identification of the section in the article metadata, and the
