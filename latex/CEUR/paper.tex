@@ -89,7 +89,7 @@ The capability of algorithms to provide accurate measures of confidence and unce
 Although deep learning methods are often capable of producing high-accuracy predictions \cite{LeCun2015, LiangpeiZhang2016}, they are generally criticized for being unable to express when to have confidence in the prediction and when the prediction should be presented as uncertain.
 If deep learning models are to be integrated reliably into real-world decision making processes, it is of vital importance that the methods being used are capable of accurately expressing uncertainty.
 
-With remotely-sensed data being available with ever-greater temporal and spatial resolutions, the development of computational processing methods which are capable of robustly handling such large volumes of data will assist countless earth-monitoring applications. 
+With remotely-sensed data being available with ever-greater temporal and spatial resolutions, the development of computational processing methods which are capable of robustly handling such large volumes of data will assist countless earth-monitoring applications.
 Specifically, with data being captured now using a wide range of capturing techniques with complementary strengths, the ability to combine this data into a multimodal analysis will allow each data mode to interact synergistically to provide better results than any individual data mode would produce in isolation.
 Each data capturing technique will naturally have its own strengths and weaknesses, inherent to the physically properties of the sensing mode.
 Deterministic classification, while useful, is held back by its inability to express uncertainty.
@@ -98,14 +98,16 @@ Uncertainty estimates, however, will greatly assist human trust in models, as it
 
 In this paper, we have analyzed how well different measures of model uncertainty perform the task of identifying misclassifications, as well as whether they can be used to identify data points which belong from a distribution other than those observed during training (out of distribution detection).
 To do so, we have used graph-based neural network architectures that are adapted to provide subjective opinions (as described in the field of belief or evidence theory \cite{Josang2018}) through the use of Dirichlet distribution parameterizations \cite{Kipf2017, ZhaoXujiang2020}.
-Adopting such a method for performing multimodal classification of remote sensing data is, to the best of our knowledge, an as-yet untested approach. The performance of the adopted technique represents a promising avenue in the search for meaningful uncertainty estimates when performing multimodal remote sensing classification.
+Adopting such a method for performing multimodal classification of remote sensing data is, to the best of our knowledge, an as-yet untested approach.
+The performance of the adopted technique represents a promising avenue in the search for meaningful uncertainty estimates when performing multimodal remote sensing classification.
 
 The remainder of this paper is organized as follows: Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::GraphNetworkArchitecture} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarizes and draws conclusions as well as suggests areas for future work.
 
 \section{Uncertainty framework}
 \label{sec::unc_framework}
 
-The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets including Cora and Pubmed. The method they present has been adapted here in order to perform the task of multimodal remote sensing classification.
+The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets including Cora and Pubmed.
+The method they present has been adapted here to perform the task of multimodal remote sensing classification.
 
 \subsection{Subjective Logic}
 Subjective Logic (SL), takes an evidence-based approach to decision making \cite{Josang2016}.
@@ -229,12 +231,12 @@ Models trained using a teacher are denoted using the ``-T'' suffix e.g. a S-BGCN
 \subsubsection{Dirichlet prior}
 A second convergence assistance technique which can be used involves the use of a Dirichlet prior, $\hat{\boldsymbol{\alpha}}$.
 The exact method chosen to provide $\hat{\boldsymbol{\alpha}}$ will depend on the nature of the problem but we will assume nodes which are nearby in the graph are more likely to belong to the same output class than nodes which are far apart, a property known as homophily \cite{HuangQian2019}.
-Using this assumption, we can use the computed distances on the graph in order to assign contributions of evidence from observed node labels to the other nodes in the graph using a function of our choosing.
+Using this assumption, we can use the computed distances on the graph to assign contributions of evidence from observed node labels to the other nodes in the graph using a function of our choosing.
 If $d_{ij}$ denotes the shortest path distance between a given node, indexed by $i$ and an observed node, indexed by $j$, then the amount of evidence contributed to suggest that the $i^\text{th}$ node belongs to the $k^\text{th}$ class is given by
 \begin{equation}
     h_{ik}(y_j,d_{ij})=
     \begin{cases}
-    \frac{1}{\sqrt{2\pi\sigma^2}}\exp{\left(\frac{-d_{ij}^2}{2\sigma^2}\right)}, & \text{if } y_{jk}=1,\\
+      \frac{\exp{\left(\frac{-d_{ij}^2}{2\sigma^2}\right)}}{\left(2\pi\sigma^2\right)^{1/2}}, & \text{if } y_{jk}=1,\\
     0, & \text{otherwise},
     \end{cases}
 \end{equation}
@@ -249,14 +251,14 @@ The KL-divergence between the Dirichlet distribution of the prior and the model 
 \label{eq::teacher_loss}
 \end{equation}
 which can, in turn, be incorporated into the total loss function.
-Models trained using a prior are denoted using the ``-K'' suffix. 
+Models trained using a prior are denoted using the ``-K'' suffix.
 
 Table \ref{loss_table} shows how these convergence assistance techniques can be weighted and combined in various permutations to provide a total loss function, $\mathcal{L}_\text{total}(\boldsymbol{\theta})$, as well as the model name abbreviations used to denote which combination has been used.
 The "B" in the model names of Table \ref{loss_table} refers to the fact that dropout inference has been used as a Bayesian approximation, as mentioned in Section \ref{sec::UncertaintyMeasures}.
 The coefficients $\lambda_{\text{T}}$ and $\lambda_{\text{K}}$ are used to control the relative importance of the teacher network and the Dirichlet prior respectively against the importance of the subjective loss function given in (\ref{eq:core_loss}).
 These have been considered as hyperparameters which are to be tuned during training.
 
-\begin{table}
+\begin{table}[!t]
 \scriptsize
 \renewcommand{\arraystretch}{1.5}
 \caption{Loss function components and their weighting coefficients for different model types}
@@ -349,7 +351,7 @@ The graph, which contains approximately 2.16 million nodes, was computed with $k
 Models were implemented and trained using the TensorFlow library \cite{Abadi2015}.
 In order to handle the imbalance of classes in the dataset, sample weighting was used.
 Samples were given weights which were inversely proportional to the number of total samples of each class in the training set.
-These weights such that the losses related to nodes belonging to under-represented classes were given an increased influence over parameter updates and vice versa.
+This allows the losses related to nodes from under-represented classes to have an increased influence over parameter updates and vice versa.
 
 All GCN-based models were constructed using a dropout layer (dropout probability $0.5$), a graph convolutional layer, as described in (\ref{eq::gcn_layer}), a second dropout layer (dropout probability $0.5$) and a second graph convolutional layer with the relevant output activation function.
 The kernel weights of the first graph convolutional layer were regularized using an $L_2$ penalization.
@@ -360,18 +362,10 @@ Where used, $\lambda_{\text{T}}$ and $\lambda_{\text{K}}$ were also found using 
 
 Learning was performed for a maximum of 400 epochs, but was stopped early if the validation loss failed to decrease further for 60 consecutive epochs.
 If stopped early, model weights were returned to the settings which provided the lowest validation set loss upon the termination of training.
-    
-Each test was performed for different random dataset splits and model weight initializations in order to obtain mean and standard deviation measures of performance.
 
-Benchmark models presented include the `vanilla' GCN (which can provide uncertainty via entropy) and the Drop-GCN which is a GCN where dropout inference has been applied in order to produce estimates of aleatoric and epistemic uncertainty in addition to entropy.
+Each test was performed for different random dataset splits and model weight initializations to obtain mean and standard deviation measures of performance.
 
-\subsection{Misclassification detection}
-
-Given that model uncertainties should provide a measure of the confidence which can be had about a model's predictions, a worthwhile estimate of uncertainty should be able to distinguish model misclassifications from accurate classifications.
-In order to measure an uncertainty output's ability to separate misclassifications, a receiver operating characteristic (ROC) curve and a precision-recall (PR) curve can be computed.
-The area under the ROC curve and PR curve (AUROC and AUPR respectively) can be used as a single numerical representation of the detection performance, where an area of $1.0$ would represent a perfect discriminator for both metrics.
-
-Models of each type described (as well as benchmark models) were trained and their outputs analyzed in order to produce the AUROC and AUPR values seen in Table \ref{tab::misc_auroc}. 
+Benchmark models presented include the `vanilla' GCN (which can provide uncertainty via entropy) and the Drop-GCN which is a GCN where dropout inference has been applied to produce estimates of aleatoric and epistemic uncertainty in addition to entropy.
 
 \begin{table*}[!t]
 \renewcommand{\arraystretch}{1.3}
@@ -395,6 +389,14 @@ Drop-GCN & - & - &$0.897$&$0.552$&$0.887$&-&-&$0.619$&$0.243$&$0.600$  \\ \hline
 \end{center}
 \end{table*}
 
+\subsection{Misclassification detection}
+
+Given that model uncertainties should provide a measure of the confidence which can be had about a model's predictions, a worthwhile estimate of uncertainty should be able to distinguish model misclassifications from accurate classifications.
+In order to measure an uncertainty output's ability to separate misclassifications, a receiver operating characteristic (ROC) curve and a precision-recall (PR) curve can be computed.
+The area under the ROC curve and PR curve (AUROC and AUPR respectively) can be used as a single numerical representation of the detection performance, where an area of $1.0$ would represent a perfect discriminator for both metrics.
+
+Models of each type described (as well as benchmark models) were trained and their outputs analyzed to produce the AUROC and AUPR values seen in Table \ref{tab::misc_auroc}.
+
 % \begin{table*}[!t]
 % \renewcommand{\arraystretch}{1.3}
 % \caption{Misclassification detection: Ability of each uncertainty type to detect misclassifications (measured by the AUPR metric).}
@@ -417,7 +419,7 @@ Drop-GCN & - & - &$0.897$&$0.552$&$0.887$&-&-&$0.619$&$0.243$&$0.600$  \\ \hline
 % \end{center}
 % \end{table*}
 
-The S-BGCN-T-K model trained achieves the highest ranked misclassification detection performance, with the uncertainty measured by entropy providing the best distinguishing metric, with AUROC and AUPR of $0.912$ and $0.672$ respectively, closely followed by the performance achieved by the measures of vacuity (AUROC and AUPR of $0.908$ and $0.659$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.905$ and $0.649$ respectively).
+The S-BGCN-T-K model achieves the best misclassification detection performance, with the uncertainty measured by entropy providing the best distinguishing metric, with AUROC and AUPR of $0.912$ and $0.672$ respectively, closely followed by the performance achieved by the measures of vacuity (AUROC and AUPR of $0.908$ and $0.659$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.905$ and $0.649$ respectively).
 
 \subsection{Out of distribution detection}
 
@@ -491,12 +493,12 @@ The adopted framework, based upon the theory of Subjective Logic, provides measu
 Experimental results have shown the performance of the S-BGCN-T-K model in the tasks of misclassification and OOD detection to be improved against baseline methods.
 This represents a promising avenue for uncertainty-aware learning in the task of multimodal remote sensing classification.
 
-The presented results have illustrated the importance of convergence assistance techniques as a means for improving the quality of uncertainty estimates, particularly through the use of a prior.
+The presented results illustrate the importance of convergence assistance techniques as a means for improving the quality of uncertainty estimates, particularly through the use of a prior.
 This can be seen by comparing the S-BGCN-T-K misclassification detection and OOD detection performance with equivalent models which do not use a prior, e.g. S-BGCN-T.
-Of the uncertainty measures produced by the presented S-BGCN-T-K model, the measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance for the task of identifying misclassifications.
-In order to identify OOD nodes, the measure of vacuity stands out as the best-performing   uncertainty metric.
+Of the uncertainty measures produced by the S-BGCN-T-K model, the measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance for the identifying misclassifications.
+In order to identify OOD nodes, the measure of vacuity stands out as the best-performing uncertainty metric.
 
-Future work should consider the generalisation potential of this method by considering its performance on other challenging remote sensing classification datasets.
+Future work should consider the generalisation potential of this method by assessing performance on other challenging remote sensing classification datasets.
 There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter, $\sigma$, or considering different prior computation methods entirely.
 %% The acknowledgments section is defined using the "acknowledgments" environment
 %% (and NOT an unnumbered section). This ensures the proper
