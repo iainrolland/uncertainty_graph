@@ -63,7 +63,7 @@ twocolumn,
 
 % The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
-In order to adopt deep learning methods in environments where the decisions being made are high-stakes, it is important to have methods which are capable of quantifying the prediction confidence or uncertainty.
+In order to adopt deep learning methods in environments where the decisions being made are high-stakes, it is important the methods are capable of quantifying the prediction confidence or uncertainty.
 Graph-based convolutional neural networks can be trained to perform classification of multimodal remote sensing data using a model output which represents a Dirichlet distribution parameterization.
 This parameterization can then also be used to obtain measures of prediction uncertainty.
 By making a correspondence between a multinomial opinion, as described by subjective logic, and a Dirichlet distribution parameterization, a direct mapping between the two can be performed.
@@ -86,7 +86,7 @@ The results presented in this paper show that the measures of uncertainty provid
 
 \section{Introduction}
 The capability of algorithms to provide accurate measures of confidence and uncertainty is important if they are to be adopted in real-world scenarios where the stakes can be high \cite{Goodman2017}.
-Although deep learning methods are often capable of producing high-accuracy predictions \cite{LeCun2015, LiangpeiZhang2016}, they are generally criticised for being unable to express when to have confidence in the prediction and when the prediction should be presented as uncertain.
+Although deep learning methods are often capable of producing high-accuracy predictions \cite{LeCun2015, LiangpeiZhang2016}, they are generally criticized for being unable to express when to have confidence in the prediction and when the prediction should be presented as uncertain.
 If deep learning models are to be integrated reliably into real-world decision making processes, it is of vital importance that the methods being used are capable of accurately expressing uncertainty.
 
 With remotely-sensed data being available with ever-greater temporal and spatial resolutions, the development of computational processing methods which are capable of robustly handling such large volumes of data will assist countless earth-monitoring applications. 
@@ -94,18 +94,18 @@ Specifically, with data being captured now using a wide range of capturing techn
 Each data capturing technique will naturally have its own strengths and weaknesses, inherent to the physically properties of the sensing mode.
 Deterministic classification, while useful, is held back by its inability to express uncertainty.
 Adoption of such techniques will always be limited by the adopter's trust in the predictions.
-Uncertainty estimates, however, will greatly assist human trust in models as it will provide a quantification of confidence that might indicate when a prediction is not to be trusted, and more importantly, when a prediction is given with great certainty.
+Uncertainty estimates, however, will greatly assist human trust in models, as it will provide a quantification of confidence that might indicate when a prediction is not to be trusted, and more importantly, when a prediction is given with great certainty.
 
-In this paper, we have analysed how well different measures of model uncertainty perform the task of identifying misclassifications, as well as whether they can be used to identify data points which belong from a distribution other than those observed during training (out of distribution detection).
+In this paper, we have analyzed how well different measures of model uncertainty perform the task of identifying misclassifications, as well as whether they can be used to identify data points which belong from a distribution other than those observed during training (out of distribution detection).
 To do so, we have used graph-based neural network architectures that are adapted to provide subjective opinions (as described in the field of belief or evidence theory \cite{Josang2018}) through the use of Dirichlet distribution parameterizations \cite{Kipf2017, ZhaoXujiang2020}.
 Adopting such a method for performing multimodal classification of remote sensing data is, to the best of our knowledge, an as-yet untested approach. The performance of the adopted technique represents a promising avenue in the search for meaningful uncertainty estimates when performing multimodal remote sensing classification.
 
-The remainder of this paper is organised as follows: Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::GraphNetworkArchitecture} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarises and draws conclusions as well as suggests areas for future work.
+The remainder of this paper is organized as follows: Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::GraphNetworkArchitecture} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarizes and draws conclusions as well as suggests areas for future work.
 
 \section{Uncertainty framework}
 \label{sec::unc_framework}
 
-The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets including Cora and Pubmed. The method they present has been adapted in order to perform the task of multimodal remote sensing classification.
+The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets including Cora and Pubmed. The method they present has been adapted here in order to perform the task of multimodal remote sensing classification.
 
 \subsection{Subjective Logic}
 Subjective Logic (SL), takes an evidence-based approach to decision making \cite{Josang2016}.
@@ -189,7 +189,7 @@ The graph's adjacency matrix, $\mathbf{A}\in\mathbb{R}^{N\times N}$, is used to 
 A set of features, $\mathbf{X}\in\mathbb{R}^{N\times C}$, is used to assign a vector description of each graph node, where $C$ denotes the number of input features.
 The graph's degree matrix, $\mathbf{D}\in\mathbb{R}^{N\times N}$, is a diagonal matrix with elements given by $\mathbf{D}_{ii}=\sum_j\mathbf{A}_{ij} $.
 
-The graph convolutional networks used are of the form proposed by \cite{Kipf2017}, where the graph convolutional layer is given by
+The graph convolutional networks (GCNs) used are of the form proposed by \cite{Kipf2017}, where the graph convolutional layer is given by
 \begin{equation}
     \mathbf{Z}^{(l+1)}=\sigma\left(\tilde{\mathbf{D}}^{-\frac{1}{2}}\tilde{\mathbf{A}}\tilde{\mathbf{D}}^{-\frac{1}{2}}\mathbf{Z}^{(l)}\boldsymbol{W}^{(l)}\right),
 \label{eq::gcn_layer}
@@ -202,7 +202,7 @@ An adaptation to the GCN architecture used by \cite{Kipf2017} must be made in or
 The adaptation made means that the model will output node-level Dirichlet distribution parameters, such that the output will provide a probability distribution over multinomial class probabilities for each node.
 To do so, the softmax output activation function used in the output layer of the GCN is substituted for a ReLU function.
 In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the $K$-dimensional concentration parameters of the $i^\text{th}$ node.
-In order to train such a model, the loss function is made up of two components: a squared error term, which is minimised in order to classify a greater proportion of the nodes correctly, and a variance term, which is minimized to incentivize the model to provide confident predictions where possible.
+In order to train such a model, the loss function is made up of two components: a squared error term, which is minimized in order to classify a greater proportion of the nodes correctly, and a variance term, which is minimized to incentivize the model to provide confident predictions where possible.
 This loss, $\mathcal{L}(\boldsymbol{\theta})$, is given by
 \begin{equation}
 \begin{split}
@@ -216,7 +216,7 @@ Models trained with such an output activation and loss function will be denoted 
 
 \subsection{Convergence assistance techniques}
 In order to assist the convergence of subjective models, two additional assistance techniques have been used: teacher knowledge distillation and the use of a Dirichlet prior.
-These methods have been shown to allow subjective models to provide better uncertainty estimates \cite{ZhaoXujiang2020}.
+These have been shown to allow subjective models to provide better uncertainty estimates \cite{ZhaoXujiang2020}.
 \subsubsection{Teacher knowledge distillation}
 By training a non-subjective model in advance, its outputs, $\hat{p}_{ik}$, can be used in order to encourage the subjective model to converge to node Dirichlet distributions with $\mathbb{E}[p_{ik}]$ which are close to the teacher's deterministic estimates.
 This is achieved using an additional term in the loss function,
@@ -349,7 +349,7 @@ The graph, which contains approximately 2.16 million nodes, was computed with $k
 Models were implemented and trained using the TensorFlow library \cite{Abadi2015}.
 In order to handle the imbalance of classes in the dataset, sample weighting was used.
 Samples were given weights which were inversely proportional to the number of total samples of each class in the training set.
-These weights were used when computing the loss during training such that the losses related to nodes belonging to under-represented classes were given an increased influence over parameter updates and vice versa.
+These weights such that the losses related to nodes belonging to under-represented classes were given an increased influence over parameter updates and vice versa.
 
 All GCN-based models were constructed using a dropout layer (dropout probability $0.5$), a graph convolutional layer, as described in (\ref{eq::gcn_layer}), a second dropout layer (dropout probability $0.5$) and a second graph convolutional layer with the relevant output activation function.
 The kernel weights of the first graph convolutional layer were regularized using an $L_2$ penalization.
@@ -371,7 +371,7 @@ Given that model uncertainties should provide a measure of the confidence which 
 In order to measure an uncertainty output's ability to separate misclassifications, a receiver operating characteristic (ROC) curve and a precision-recall (PR) curve can be computed.
 The area under the ROC curve and PR curve (AUROC and AUPR respectively) can be used as a single numerical representation of the detection performance, where an area of $1.0$ would represent a perfect discriminator for both metrics.
 
-Models of each type described (as well as benchmark models) were trained and their outputs analysed in order to produce the AUROC and AUPR values seen in Table \ref{tab::misc_auroc}. 
+Models of each type described (as well as benchmark models) were trained and their outputs analyzed in order to produce the AUROC and AUPR values seen in Table \ref{tab::misc_auroc}. 
 
 \begin{table*}[!t]
 \renewcommand{\arraystretch}{1.3}
