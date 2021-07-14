@@ -69,7 +69,7 @@ This parameterization can then also be used to obtain measures of prediction unc
 By making a correspondence between a multinomial opinion, as described by subjective logic, and a Dirichlet distribution parameterization, a direct mapping between the two can be performed.
 A multinomial opinion of this kind can produce quantified measures of uncertainty and distinguish uncertainty due to a lack of evidence (vacuity) and uncertainty due to conflicting evidence (dissonance).
 With an appropriately chosen loss function, the graph-based classifier will converge to provide accurate estimates of uncertainty.
-The results presented in this paper show that the measures of uncertainty provided by such models are capable of better distinguishing model misclassifications as well as out-of-distribution data samples than probabilistic measures of uncertainty produced by equivalent deterministic neural networks.
+The results presented in this paper show that the measures of uncertainty provided by such models are capable of better distinguishing out-of-distribution data samples than probabilistic measures of uncertainty produced by equivalent deterministic neural networks.
 \end{abstract}
 
 % Keywords. The author(s) should pick words that accurately describe the work being presented. Separate the keywords with commas.
@@ -166,13 +166,13 @@ where $\textrm{Bal}()$ is a function which gives the relative balance between tw
     0,&\text{otherwise.}\end{cases}
 \end{equation}
 
-In order assess the relative ability of evidential uncertainties to express different types of doubt, three commonly used probabilistic measures of uncertainty (aleatoric, epistemic and entropy) are computed to provide comparisons.
-For a Bayesian model with inputs, outputs and parameters denoted $x$, $y$ and $\boldsymbol{\theta}$ respectively, the posterior, which will be approximated, is $p(\boldsymbol{\theta}\vert\mathcal{D})$, where $\mathcal{D}$ is the observed dataset.
-The total entropy, made up of both aleatoric and epistemic uncertainty \cite{Depeweg2018} is given by
-\begin{equation}
-    \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right),
-\end{equation}
-where $\mathcal{H}()$ computes the differential entropy of a distribution.
+The differential entropy of the model predictions is also computed to provide a comparitive metric against which the evidential uncertainties can be compared.
+% For a Bayesian model with inputs, outputs and parameters denoted $x$, $y$ and $\boldsymbol{\theta}$ respectively, the posterior, which will be approximated, is $p(\boldsymbol{\theta}\vert\mathcal{D})$, where $\mathcal{D}$ is the observed dataset.
+% The total entropy, made up of both aleatoric and epistemic uncertainty \cite{Depeweg2018} is given by
+% \begin{equation}
+%     \mathcal{H}\left(\mathbb{E}_{p(\boldsymbol{\theta}\vert \mathcal{D})}\left[p(y\vert x;\boldsymbol{\theta}\right]\right),
+% \end{equation}
+% where $\mathcal{H}()$ computes the differential entropy of a distribution.
 % Aleatoric uncertainty, which accounts for noise inherent to the data observations \cite{Kendall2017}, is given by
 % \begin{equation}
 %     \mathbb{E}_{p\left(\boldsymbol{\theta}\vert \mathcal{D}\right)}\left[\mathcal{H}(p(y\vert x; \boldsymbol{\theta}))\right].
@@ -291,7 +291,7 @@ The graph edges are computed using a $k$-nearest neighbors algorithm with two no
 This produces a graph which is both undirected and unweighted.
 The graph, which contains approximately 2.16 million nodes, was computed with $k=15$.
 
-In order to measure an uncertainty output's ability to separate misclassifications, a receiver operating characteristic (ROC) curve and a precision-recall (PR) curve can be computed.
+In order to measure an uncertainty output's ability to separate OOD nodes, a receiver operating characteristic (ROC) curve and a precision-recall (PR) curve can be computed.
 The area under the ROC curve and PR curve (AUROC and AUPR respectively) can be used as a single numerical representation of the detection performance, where an area of $1.0$ would represent a perfect discriminator for both metrics.
 
 % The exact types and abundances of these classes can be found in Table \ref{tab::classes}.
@@ -368,7 +368,7 @@ If stopped early, model weights were returned to the settings which provided the
 
 Each test was performed for different random dataset splits and model weight initializations to obtain mean and standard deviation measures of performance.
 
-Benchmark models presented include the `standard' GCN (which can provide uncertainty via entropy) and the Drop-GCN which is a GCN where dropout inference has been applied to produce estimates of aleatoric and epistemic uncertainty in addition to entropy.
+A benchmark has been provided by training `standard' GCNs which provide prediction entropy as a form of uncertainty estimate.
 
 % \begin{table*}[!t]
 % \renewcommand{\arraystretch}{1.3}
@@ -428,7 +428,7 @@ Benchmark models presented include the `standard' GCN (which can provide uncerta
 It would also be reasonable to expect that uncertainty should be higher when the model is asked to make a prediction using an input which does not resemble the inputs upon which it was trained.
 The relative inability of neural networks to successfully extrapolate beyond the support of the training data is a well-known weakness of these methods \cite{Lakshminarayanan2017}.
 By training models using only a subset of the classes provided by the GT, with the other classes acting as out of distribution (OOD) samples, the OOD detection ability of the uncertainty metrics can be measured.
-Using the same approach as described for misclassification detection, the AUROC and AUPR can be calculated for each uncertainty output provided by each model type, in order to determine the relative performance of the respective metrics for this task.
+The AUROC and AUPR can be calculated for each uncertainty output provided by each model type, in order to determine the relative performance of the respective metrics for this task.
 
 In the results presented, two classes were randomly selected to act as OOD.
 This was repeated 10 times, with two new randomly sampled classes selected for each training and evaluation loop in order that the variation in OOD detection performance due to the nature of the classes selected as OOD could be averaged out and the mean and standard deviation computed.
@@ -451,8 +451,8 @@ S-BGCN-T & $0.588\pm0.147$ & $0.664\pm0.133$ & $0.578\pm0.186$ & $0.128\pm0.187$
 S-BGCN & $0.586\pm0.147$ & $0.666\pm0.132$ & $0.580\pm0.191$ & $0.127\pm0.186$ & $0.139\pm0.190$ & $0.145\pm0.209$  \\ 
 S-GCN & $0.580\pm0.145$ & $0.650\pm0.120$ & $0.586\pm0.181 $ & $0.125\pm0.185$ & $0.130\pm0.191$ & $0.143\pm0.207$   \\ 
 S-MLP & $0.767\pm0.152$ & $0.805\pm0.114$ & $0.787\pm0.125$ & $0.245\pm0.214$ & $0.233\pm0.170$ & $0.219\pm0.201$   \\   
-GCN & - & - & $0.538\pm0.188$ & - & - & $0.116\pm0.179$  \\ 
-Drop-GCN & - & - & $0.538\pm0.187$ & - & - & $0.116\pm0.179$  \\ \hline
+GCN & - & - & $0.538\pm0.188$ & - & - & $0.116\pm0.179$  \\  \hline
+% Drop-GCN & - & - & $0.538\pm0.187$ & - & - & $0.116\pm0.179$  \\ \hline
 \end{tabular}
 \end{center}
 \end{table*}
@@ -480,7 +480,7 @@ Drop-GCN & - & - & $0.538\pm0.187$ & - & - & $0.116\pm0.179$  \\ \hline
 % \end{table*}
 
 For the task of OOD detection, the S-BGCN-T-K model is the highest ranked model.
-Its measure of vacuity uncertainty provided the best distinguishing metric, with mean AUROC and AUPR of $0.882$ and $0.318$ respectively, closely followed by performance from the measures of entropy (AUROC and AUPR of $0.878$ and $0.316$ respectively) and aleatoric uncertainty (AUROC and AUPR of $0.877$ and $0.316$ respectively).
+Its measure of vacuity uncertainty provided the best distinguishing metric, with mean AUROC and AUPR of $0.882$ and $0.318$ respectively, closely followed by performance from the measure of entropy (AUROC and AUPR of $0.878$ and $0.316$ respectively).
 The performance of the S-BGCN-T-K model stands out above the performance of other models trained.
 This highlights the importance of the convergence assistance techniques used, particularly the use of a meaningful prior.
 
