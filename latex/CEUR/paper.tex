@@ -63,7 +63,8 @@ twocolumn,
 
 % The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
-In order to adopt deep learning methods in environments where the decisions being made are high-stakes, it is important the methods are capable of quantifying the prediction confidence or uncertainty.
+%In order to adopt deep learning methods in environments where the decisions being made are high-stakes, it is important the methods are capable of quantifying the prediction confidence or uncertainty.
+Having the ability to quantify prediction confidence or uncertainty will greatly assist the successful integration of deep learning methods into high-stake decision making processes.
 Graph-based convolutional neural networks can be trained to perform classification of multimodal remote sensing data using a model output which represents a Dirichlet distribution parameterization.
 This parameterization can then also be used to obtain measures of prediction uncertainty.
 By making a correspondence between a multinomial opinion, as described by subjective logic, and a Dirichlet distribution parameterization, a direct mapping between the two can be performed.
@@ -166,7 +167,8 @@ where $\textrm{Bal}()$ is a function which gives the relative balance between tw
     0,&\text{otherwise.}\end{cases}
 \end{equation}
 
-The differential entropy of the model predictions is also computed to provide a comparitive metric against which the evidential uncertainties can be compared.
+The entropy of the node-level multinomial distributions provided by the models is also computed to represent a form of uncertainty.
+This is done in order to provide a comparitive metric against which the evidential uncertainties can be compared.
 % For a Bayesian model with inputs, outputs and parameters denoted $x$, $y$ and $\boldsymbol{\theta}$ respectively, the posterior, which will be approximated, is $p(\boldsymbol{\theta}\vert\mathcal{D})$, where $\mathcal{D}$ is the observed dataset.
 % The total entropy, made up of both aleatoric and epistemic uncertainty \cite{Depeweg2018} is given by
 % \begin{equation}
@@ -425,7 +427,7 @@ A benchmark has been provided by training `standard' GCNs which provide predicti
 
 \subsection{Out of distribution detection}
 
-It would also be reasonable to expect that uncertainty should be higher when the model is asked to make a prediction using an input which does not resemble the inputs upon which it was trained.
+It would be reasonable to expect that uncertainty should be higher when the model is asked to make a prediction using an input which does not resemble the inputs upon which it was trained.
 The relative inability of neural networks to successfully extrapolate beyond the support of the training data is a well-known weakness of these methods \cite{Lakshminarayanan2017}.
 By training models using only a subset of the classes provided by the GT, with the other classes acting as out of distribution (OOD) samples, the OOD detection ability of the uncertainty metrics can be measured.
 The AUROC and AUPR can be calculated for each uncertainty output provided by each model type, in order to determine the relative performance of the respective metrics for this task.
@@ -485,23 +487,24 @@ The performance of the S-BGCN-T-K model stands out above the performance of othe
 This highlights the importance of the convergence assistance techniques used, particularly the use of a meaningful prior.
 
 The fact that vacuity is the uncertainty measure which best distinguishes OOD nodes reflects intuition.
-Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which the model ought to have little evidence to support its predictions.
+Since vacuity measures the absence of evidence for a prediction, it is natural to expect that it would better distinguish OOD nodes for which the model ought to have little evidence to support its classification.
 
 \section{Conclusion}
 \label{sec::conclusion}
 
 In this paper we have adapted a novel classification method capable of providing uncertainty estimates to the task of multi-class classification of multimodal remote sensing data.
-The adopted framework, based upon the theory of Subjective Logic, provides measures of vacuity and dissonance which are better capable of identifying out of distribution samples than the alternative probabilistic measures of uncertainty assessed.
+The adopted framework, based upon the theory of Subjective Logic, provides measures of vacuity and dissonance uncertainty.
+Of the types of uncertainty assessed, the measure of vacuity was the best metric to perform identification of out of distribution samples.
 Experimental results have shown the performance of the S-BGCN-T-K model for OOD detection to be improved against baseline methods.
 This represents a promising avenue for uncertainty-aware learning in the task of multimodal remote sensing classification.
 
 The presented results illustrate the importance of convergence assistance techniques as a means for improving the quality of uncertainty estimates, particularly through the use of a prior.
 This can be seen by comparing the S-BGCN-T-K OOD detection performance with equivalent models which do not use a prior, e.g. S-BGCN-T.
 % Of the uncertainty measures produced by the S-BGCN-T-K model, the measures of vacuity, aleatoric uncertainty or entropy all provide near-best performance for the identifying misclassifications.
-In order to identify OOD nodes, the measure of vacuity stands out as the best-performing uncertainty metric.
 
 Future work should consider the generalisation potential of this method by assessing performance on other challenging remote sensing classification datasets.
-There is also scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter, $\sigma$, or considering different prior computation methods entirely.
+The analysis could also be extended to assess whether the presented uncertainty measures could be used to detect model misclassifications.
+Additionally, there is scope for research into how the choice of method for computing the $\hat{\boldsymbol{\alpha}}$ prior affects the quality of uncertainty estimates, either by varying the scale parameter, $\sigma$, or considering different prior computation methods entirely.
 % The acknowledgments section is defined using the "acknowledgments" environment
 % (and NOT an unnumbered section). This ensures the proper
 % identification of the section in the article metadata, and the
