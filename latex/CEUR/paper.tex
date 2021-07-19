@@ -18,7 +18,7 @@ twocolumn,
 \DeclarePairedDelimiterX{\infdivx}[2]{(}{)}{%
   #1\;\delimsize\|\;#2%
 }
-\newcommand{\infdiv}{D\infdivx}
+\newcommand{\infdiv}{D_{\textrm{KL}}\infdivx}
 \DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
 
 % Used for colored boxes in class legend table
@@ -48,7 +48,7 @@ twocolumn,
 \conference{Proceedings of the CIKM 2021 Workshops, November 1-5, Online}
 
 % The "title" command
-\title{Uncertainty-aware graph-based multimodal remote sensing}
+\title{Uncertainty-aware graph-based multimodal remote sensing detection of out-of-distribution samples}
 
 % The "author" command and its associated commands are used to define
 % the authors and their affiliations.
@@ -106,6 +106,8 @@ The remainder of this paper is organized as follows: Section \ref{sec::unc_frame
 
 \section{Uncertainty framework}
 \label{sec::unc_framework}
+The proposed uncertainty-aware framework relies on the definition of uncertainty metrics, which in turn are based on subjective logic and a Dirichlet mapping \cite{ZhaoXujiang2020}.
+These steps are detailed in this section, and have been properly adapted to the task of multimodal remote sensing classification.
 
 % The framework described in this section is the same as is described by the work of \cite{ZhaoXujiang2020} where they use the approach to perform semi-supervised classification of benchmark graph classification datasets including Cora and Pubmed.
 % The method they present has been adapted here to perform the task of multimodal remote sensing classification.
@@ -227,7 +229,8 @@ This is achieved using an additional term in the loss function,
 \begin{equation}
     \mathcal{L}_{\text{T}}(\boldsymbol{\theta})=\sum_i\sum_k\left(\hat{p}_{ik}\log\frac{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}\right),
 \end{equation}
-which corresponds to the summation of KL-divergence terms between the teacher output probability and the expected value of the subjective model's Dirichlet distribution for each node, $\sum_i\infdiv{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}$.
+which corresponds to the summation of Kullback-Leibler (KL) divergence terms between the teacher output probability and the expected value of the subjective model's Dirichlet distribution for each node.
+Using $D_{\textrm{KL}}(\,\vert\vert\,)$ to compute the KL divergence, this is stated equivalently as $\sum_i\infdiv{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}$.
 Notice that this sum is computed over all nodes as opposed to just the nodes in $\mathbb{L}$.
 Models trained using a teacher are denoted using the ``-T'' suffix e.g. a S-BGCN-T model would indicate that a pre-trained GCN was used as a teacher in order to assist the training convergence of a subjective graph convolutional model.
 \subsubsection{Dirichlet prior}
@@ -247,7 +250,7 @@ The total evidence to suggest the $i^\text{th}$ node belongs to the $k^\text{th}
 \begin{equation}
     \hat{\boldsymbol{\alpha}}_{ik}=1+e_{ik}=1+\sum_{j\in\mathbb{L}}h_{ik}(y_j, d_{ij}).
 \end{equation}
-The KL-divergence between the Dirichlet distribution of the prior and the model output is given by the term
+The KL divergence between the Dirichlet distribution of the prior and the model output is given by the term
 \begin{equation}
     \mathcal{L}_{\text{K}}(\boldsymbol{\theta})=\sum_i\infdiv{\text{Dir}(\mathbf{p}_i\vert\boldsymbol{\alpha}_i)}{\text{Dir}(\hat{\mathbf{p}}_i\vert\hat{\boldsymbol{\alpha}}_i)},
 \label{eq::teacher_loss}
@@ -281,7 +284,7 @@ S-BGCN-T-K & $\mathcal{L}(\boldsymbol{\theta})+\lambda_{\text{T}}\mathcal{L}_{\t
 \section{Results and analysis}
 \label{sec::results}
 \subsection{Data}
-A subsection of the 2018 IEEE GRSS Data Fusion Challenge dataset was selected for the purposes of validating the described methods.
+A subsection of the 2018 IEEE GRSS Data Fusion Challenge dataset \cite{HoustonDataset} ws selected for the purposes of validating the described methods.
 The ground truth labels in this dataset describe 20 different urban land cover/land use classes (i.e. $K=20$) as well as an unlabelled state, described as Unclassified.
 The modes of input data represent measurements from three sensor types: LiDAR, optical and hyperspectral (HS).
 The LiDAR data was provided at $0.5$ m resolution, the same resolution as the ground truth labels (GT).
@@ -494,8 +497,8 @@ Since vacuity measures the absence of evidence for a prediction, it is natural t
 
 In this paper we have adapted a novel classification method capable of providing uncertainty estimates to the task of multi-class classification of multimodal remote sensing data.
 The adopted framework, based upon the theory of Subjective Logic, provides measures of vacuity and dissonance uncertainty.
-Of the types of uncertainty assessed, the measure of vacuity was the best metric to perform identification of out of distribution samples.
-Experimental results have shown the performance of the S-BGCN-T-K model for OOD detection to be improved against baseline methods.
+Of the types of uncertainty assessed, the measure of vacuity was the best metric to perform identification of OOD samples.
+Experimental results have shown the performance of the S-BGCN-T-K model in the task of OOD detection to be improved against baseline methods.
 This represents a promising avenue for uncertainty-aware learning in the task of multimodal remote sensing classification.
 
 The presented results illustrate the importance of convergence assistance techniques as a means for improving the quality of uncertainty estimates, particularly through the use of a prior.
