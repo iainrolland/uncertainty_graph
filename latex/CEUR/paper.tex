@@ -45,7 +45,7 @@ twocolumn,
   International (CC BY 4.0).}
 
 % This command is for the conference information
-\conference{Proceedings of the CIKM 2021 Workshops, November 1-5, Online}
+\conference{Proceedings of the CIKM 2021 Workshops, November 01-05, 2021, Online}
 
 % The "title" command
 \title{Uncertainty-aware graph-based multimodal remote sensing detection of out-of-distribution samples}
@@ -54,7 +54,7 @@ twocolumn,
 % the authors and their affiliations.
 \author[1]{Iain~Rolland}[orcid=0000-0002-4137-5605, email=imr27@cam.ac.uk,]
 
-\address[1]{Department of Engineering, University of Cambridge, Cambridge, CB2 1PZ United Kingdom}
+\address[1]{Department of Engineering, University of Cambridge, Cambridge, CB2 1PZ, United Kingdom}
 \address[2]{Department of Physics and Technology, UiT the Arctic University of Norway, P.O. box 6050 Langnes, NO-9037, Tromsø, Norway}
 
 \author[1,2]{Andrea~Marinoni}[orcid=0000-0001-6789-0915, email=andrea.marinoni@uit.no,]
@@ -97,10 +97,13 @@ Deterministic classification, while useful, is held back by its inability to exp
 Adoption of such techniques will always be limited by the adopter's trust in the predictions.
 Uncertainty estimates, however, will greatly assist human trust in models, as it will provide a quantification of confidence that might indicate when a prediction is not to be trusted, and more importantly, when a prediction is given with great certainty \cite{Chakraborty2017}.
 
-In this paper, we have analyzed how well different measures of model uncertainty perform the task of identifying data points which belong from a distribution other than those observed during training (out of distribution detection).
+In this paper, we have analyzed how well different measures of model uncertainty perform the task of identifying data points which belong to a distribution other than those observed during training (out of distribution detection).
 To do so, we have used graph-based neural network architectures that are adapted to provide subjective opinions (as described in the field of belief or evidence theory \cite{Josang2018}) through the use of Dirichlet distribution parameterizations \cite{Kipf2017, ZhaoXujiang2020}.
-Adopting such a method for performing multimodal classification of remote sensing data is, to the best of our knowledge, an as-yet untested approach.
-The performance of the adopted technique represents a promising avenue in the search for meaningful uncertainty estimates when performing multimodal remote sensing classification.
+The subjective opinions can be used to measure two intuitive measures of uncertainty: vacuity and dissonance.
+Vacuity is a measure of the uncertainty related to an absence of observed evidence, i.e. a higher measure of vacuity suggests a lack of supporting evidence for a prediction.
+Dissonance is a measure of prediction uncertainty arising due to the presence of conflicting evidence.
+This approach (using graph-based neural networks within a subjective-logic framework) is, to the best of our knowledge, as-yet untested as a method for performing classification of multimodal remote sensing data.
+The performance of the adopted technique represents a promising avenue in the search for meaningful uncertainty estimates for this task.
 
 The remainder of this paper is organized as follows: Section \ref{sec::unc_framework} describes the uncertainty framework adopted in the methods presented, Section \ref{sec::GraphNetworkArchitecture} details the construction of the graph-based neural networks used, Section \ref{sec::results} presents an analysis of results and Section \ref{sec::conclusion} summarizes and draws conclusions as well as suggests areas for future work.
 
@@ -204,7 +207,7 @@ where $\mathbf{Z}^{(l)}$, $\mathbf{Z}^{(l+1)}$ and $\boldsymbol{W}^{(l)}$ are th
 For brevity, the tilde operator is used to represent the inclusion of self-connection edges in the graph, i.e. $\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$ and $\tilde{\mathbf{D}}=\mathbf{D}+\mathbf{I}$.
 
 \subsection{Subjective models}
-An adaptation to the GCN architecture used by \cite{Kipf2017} must be made in order to obtain subjective opinions that will be used to obtain measures of vacuity and dissonance uncertainty.
+An adaptation to the GCN architecture used by \cite{Kipf2017} must be made in order to obtain the subjective opinions that will be used to obtain measures of vacuity and dissonance uncertainty.
 The adaptation made means that the model will output node-level Dirichlet distribution parameters, such that the output will provide a probability distribution over multinomial class probabilities for each node.
 To do so, the softmax output activation function used in the output layer of the GCN is substituted for a ReLU function.
 In this way, the model is trained to output non-negative evidence contributions, $\mathbf{E}\in\mathbb{R}^{N\times K}$, where $\mathbf{E}_{i} = \boldsymbol{\alpha}_{i}-\mathbf{1}$ and $\boldsymbol{\alpha}_{i}$ refers to the $K$-dimensional concentration parameters of the $i^\text{th}$ node.
@@ -232,7 +235,7 @@ This is achieved using an additional term in the loss function,
 which corresponds to the summation of Kullback-Leibler (KL) divergence terms between the teacher output probability and the expected value of the subjective model's Dirichlet distribution for each node.
 Using $D_{\textrm{KL}}(\,\vert\vert\,)$ to compute the KL divergence, this is stated equivalently as $\sum_i\infdiv{\hat{p}_{ik}}{\mathbb{E}[p_{ik}]}$.
 Notice that this sum is computed over all nodes as opposed to just the nodes in $\mathbb{L}$.
-Models trained using a teacher are denoted using the ``-T'' suffix e.g. a S-BGCN-T model would indicate that a pre-trained GCN was used as a teacher in order to assist the training convergence of a subjective graph convolutional model.
+Models trained using a teacher are denoted using the `-T' suffix e.g. a S-BGCN-T model would indicate that a pre-trained GCN was used as a teacher in order to assist the training convergence of a subjective graph convolutional model.
 \subsubsection{Dirichlet prior}
 A second convergence assistance technique which can be used involves the use of a Dirichlet prior, $\hat{\boldsymbol{\alpha}}$.
 The exact method chosen to provide $\hat{\boldsymbol{\alpha}}$ will depend on the nature of the problem but we will assume nodes which are nearby in the graph are more likely to belong to the same output class than nodes which are far apart, a property known as homophily \cite{HuangQian2019}.
@@ -256,10 +259,10 @@ The KL divergence between the Dirichlet distribution of the prior and the model 
 \label{eq::teacher_loss}
 \end{equation}
 which can, in turn, be incorporated into the total loss function.
-Models trained using a prior are denoted using the ``-K'' suffix.
+Models trained using a prior are denoted using the `-K' suffix.
 
 Table \ref{loss_table} shows how these convergence assistance techniques can be weighted and combined in various permutations to provide a total loss function, $\mathcal{L}_\text{total}(\boldsymbol{\theta})$, as well as the model name abbreviations used to denote which combination has been used.
-The "B" in the model names of Table \ref{loss_table} refers to the fact that dropout inference has been used as a Bayesian approximation, as mentioned in Section \ref{sec::UncertaintyMeasures}.
+The `B' in the model names of Table \ref{loss_table} refers to the fact that dropout inference has been used as a Bayesian approximation.
 The coefficients $\lambda_{\text{T}}$ and $\lambda_{\text{K}}$ are used to control the relative importance of the teacher network and the Dirichlet prior respectively against the importance of the subjective loss function given in (\ref{eq:core_loss}).
 These have been considered as hyperparameters which are to be tuned during training.
 
@@ -356,7 +359,7 @@ The area under the ROC curve and PR curve (AUROC and AUPR respectively) can be u
 % \end{figure}
 
 \subsection{Network training and hyperparameters}
-Models were implemented and trained using the TensorFlow library \cite{Abadi2015}.
+Models were implemented and trained using the TensorFlow library \cite{Abadi2015} on a personal laptop computer with Intel Core i7 CPU and 16 GB of RAM.
 In order to handle the imbalance of classes in the dataset, sample weighting was used.
 Samples were given weights which were inversely proportional to the number of total samples of each class in the training set.
 This allows the losses related to nodes from under-represented classes to have an increased influence over parameter updates and vice versa.
@@ -513,7 +516,7 @@ Additionally, there is scope for research into how the choice of method for comp
 % identification of the section in the article metadata, and the
 % consistent spelling of the heading.
 \begin{acknowledgments}
-This work is funded in part by Centre for Integrated Remote Sensing and Forecasting for Arctic Operations (CIRFA) and the Research Council of Norway (RCN Grant no. 237906), the Automatic Multisensor remote sensing for Sea Ice Characterization (AMUSIC) Framsenteret ``Polhavet'' flagship project 2020, the Isaac Newton Trust, and Newnham College, Cambridge, UK.
+This work is funded in part by Centre for Integrated Remote Sensing and Forecasting for Arctic Operations (CIRFA) and the Research Council of Norway (RCN Grant no. 237906), the Automatic Multisensor remote sensing for Sea Ice Characterization (AMUSIC) Framsenteret `Polhavet' flagship project 2020, the Isaac Newton Trust, and Newnham College, Cambridge, UK.
 \end{acknowledgments}
 
 % Define the bibliography file to be used
