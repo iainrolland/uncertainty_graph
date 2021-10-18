@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import tqdm
-from utils import mask_to_weights, log_error
+from .utils import mask_to_weights, log_error
 from sklearn.metrics import roc_auc_score, average_precision_score
 from scipy.special import xlogy
 import tensorflow as tf
@@ -36,11 +36,13 @@ def dissonance_uncertainty(alpha):
 
     for i in tqdm(range(alpha.shape[0])):  # for each node
         b = belief[i]  # belief vector
-        numerator, denominator = np.abs(b[:, None] - b[None, :]), b[None, :] + b[:, None]
+        numerator, denominator = np.abs(
+            b[:, None] - b[None, :]), b[None, :] + b[:, None]
         bal = 1 - np.true_divide(numerator, denominator, where=denominator != 0,
                                  out=np.zeros_like(denominator)) - np.eye(len(b))
         coefficients = b[:, None] * b[None, :] - np.diag(b ** 2)
-        denominator = np.sum(b[None, :] * np.ones(belief.shape[1]) - np.diag(b), axis=-1, keepdims=True)
+        denominator = np.sum(
+            b[None, :] * np.ones(belief.shape[1]) - np.diag(b), axis=-1, keepdims=True)
         dis_un[i] = (coefficients * np.true_divide(bal, denominator, where=denominator != 0,
                                                    out=np.zeros_like(bal))).sum()
 
@@ -57,14 +59,16 @@ def entropy(prob):
 
 
 def entropy_bayesian(prob_samples):
-    prob = np.mean(prob_samples, axis=0)  # take the average probability from MC-Dropouts and compute its entropy
+    # take the average probability from MC-Dropouts and compute its entropy
+    prob = np.mean(prob_samples, axis=0)
     return entropy(prob)
 
 
 def aleatoric_bayesian(prob_samples):
     al_total, al_class = [], []
     for prob in prob_samples:
-        total_en, class_en = entropy(prob)  # take the entropy of each MC-Dropout output and compute the mean entropy
+        # take the entropy of each MC-Dropout output and compute the mean entropy
+        total_en, class_en = entropy(prob)
         al_total.append(total_en), al_class.append(class_en)
     return np.mean(al_total, axis=0), np.mean(al_class, axis=0)
 
@@ -91,8 +95,10 @@ class DropoutUncertainties:
             message = "Probabilities sum to greater than one, has method been called using Dirichlet parameters?"
             raise log_error(AssertionError, message)
         if self.samples_seen >= self.num_samples:
-            message = "DropoutUncertainties object was instantiated expecting {} samples".format(self.num_samples)
-            message += " but has been called on {} samples.".format(self.samples_seen + 1)
+            message = "DropoutUncertainties object was instantiated expecting {} samples".format(
+                self.num_samples)
+            message += " but has been called on {} samples.".format(
+                self.samples_seen + 1)
             raise log_error(AssertionError, message)
         self._mean_prob(prob)
         self._mean_entropy(prob)
@@ -116,8 +122,10 @@ class DropoutUncertainties:
 
     def get_uncertainties(self):
         if self.samples_seen != self.num_samples:
-            message = "DropoutUncertainties object was instantiated expecting {} samples".format(self.num_samples)
-            message += " but has only been called on {} samples.".format(self.samples_seen)
+            message = "DropoutUncertainties object was instantiated expecting {} samples".format(
+                self.num_samples)
+            message += " but has only been called on {} samples.".format(
+                self.samples_seen)
             raise log_error(AssertionError, message)
         total_entropy, class_entropy = entropy(self.mean_prob)
         total_aleatoric, class_aleatoric = self.mean_total_entropy, self.mean_class_entropy
@@ -171,13 +179,15 @@ def get_subjective_bayesian_uncertainties(alpha_samples):
 def misclassification(prob, uncertainties, y_true, test_mask):
     # Don't consider nodes in the Unclassified class (id 0)
     mask_test = test_mask.copy()
-    mask_test[np.argwhere((y_true.argmax(axis=-1) == 0) & mask_test).flatten()] = False
+    mask_test[np.argwhere((y_true.argmax(axis=-1) == 0)
+                          & mask_test).flatten()] = False
 
     uncertainties = {unc_name: {"values": unc_values, "auroc": 0, "aupr": 0}
                      for unc_name, unc_values in uncertainties.items()}
 
     # node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
-    node_indices = np.random.choice(np.argwhere(mask_test).flatten(), sum(mask_test), replace=False)
+    node_indices = np.random.choice(np.argwhere(
+        mask_test).flatten(), sum(mask_test), replace=False)
     # true if prediction matches label
     pred_matches_label_bool = np.equal(prob[node_indices].argmax(axis=-1),
                                        y_true[node_indices].argmax(axis=-1))
@@ -195,19 +205,24 @@ def misclassification(prob, uncertainties, y_true, test_mask):
 def ood_detection(uncertainties, y_true, train_mask, test_mask):
     # Consider nodes in the Unclassified class (id 0) as neither in nor out of distribution i.e. just remove them
     mask_test = test_mask.copy()
-    mask_test[np.argwhere((y_true.argmax(axis=-1) == 0) & mask_test).flatten()] = False
+    mask_test[np.argwhere((y_true.argmax(axis=-1) == 0)
+                          & mask_test).flatten()] = False
 
-    train_classes = set(np.argwhere(y_true[train_mask].sum(axis=0) != 0).flatten())
-    test_classes = set(np.argwhere(y_true[mask_test].sum(axis=0) != 0).flatten())
+    train_classes = set(np.argwhere(
+        y_true[train_mask].sum(axis=0) != 0).flatten())
+    test_classes = set(np.argwhere(
+        y_true[mask_test].sum(axis=0) != 0).flatten())
     ood_classes = test_classes.difference(train_classes)
 
     uncertainties = {unc_name: {"values": unc_values, "auroc": 0, "aupr": 0}
                      for unc_name, unc_values in uncertainties.items()}
 
     # node_indices = np.random.choice(np.argwhere(test_mask).flatten(), min(sum(test_mask), 1000), replace=False)
-    node_indices = np.random.choice(np.argwhere(mask_test).flatten(), sum(mask_test), replace=False)
+    node_indices = np.random.choice(np.argwhere(
+        mask_test).flatten(), sum(mask_test), replace=False)
     # true if node from an OOD class
-    is_ood_bool = np.isin(y_true[node_indices].argmax(axis=-1), list(ood_classes))
+    is_ood_bool = np.isin(
+        y_true[node_indices].argmax(axis=-1), list(ood_classes))
     for unc in uncertainties:
         uncertainties[unc]["auroc"] = roc_auc_score(is_ood_bool,
                                                     uncertainties[unc]["values"][node_indices])
