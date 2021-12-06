@@ -60,8 +60,10 @@ def remove_ax_list_ticks(ax_list):
 
 def set_rcParams():
     plt.rcParams["figure.dpi"] = 300
-    plt.rcParams["font.family"] = "Times New Roman"
-    plt.rcParams["font.family"] = "Times New Roman"
+    # plt.rcParams["font.family"] = "Times New Roman"
+    plt.rcParams["font.family"] = "Computer Modern"
+    plt.rcParams['text.usetex'] = True
+    plt.rcParams['text.latex.preamble'] = r"\usepackage{bm} \usepackage{amsmath}"
     # plt.rcParams['font.size'] = 3
 
 

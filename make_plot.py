@@ -1,4 +1,4 @@
-from plotting.figures import plot
+from plotting.figures import *
 import plotting.utils as pu
 from utils import set_seeds
 import matplotlib.pyplot as plt
@@ -16,13 +16,13 @@ from glob import glob
 from params import Params
 from models import get_model
 
-seed = 0
-set_seeds(seed)
-gpu_initialise([])
-hd = HoustonDatasetMini(transforms=S_BGCN_T_K.transforms)
-model_dir = "experiments/test_SBMLP/"
-parameters = Params(os.path.join(model_dir, "params.json"))
 
+# seed = 0
+# set_seeds(seed)
+# gpu_initialise([])
+# hd = HoustonDatasetMini(transforms=S_BGCN_T_K.transforms)
+# model_dir = "experiments/test_SBMLP/"
+# parameters = Params(os.path.join(model_dir, "params.json"))
 
 def get_network(m_dir, data, params):
     model = get_model(params)
@@ -42,7 +42,10 @@ def get_network(m_dir, data, params):
 # vacuity, dissonance = vacuity_uncertainty(alpha), dissonance_uncertainty(alpha)
 # np.save(os.path.join(model_dir, "vacuity.npy"), vacuity.astype("float32"))
 # np.save(os.path.join(model_dir, "dissonance.npy"), dissonance.astype("float32"))
-plot(model_dir)
+# plot(model_dir)
+
+# draw_dirichlet([[1.] * 3, [5.] * 3, [50] * 3])
+beirut_fig()
 
 # spixel_path = "experiments/compare_w_vs_wo_spixel/spixel_{}_seed_{}.npy".format("{}", seed)
 # pixel_path = "experiments/compare_w_vs_wo_spixel/alpha_{}_seed_{}.npy".format("{}", seed)
