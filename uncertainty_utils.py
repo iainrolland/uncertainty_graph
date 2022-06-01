@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import tqdm
-from .utils import mask_to_weights, log_error
+from utils import mask_to_weights, log_error
 from sklearn.metrics import roc_auc_score, average_precision_score
 from scipy.special import xlogy
 import tensorflow as tf
@@ -192,8 +192,11 @@ def misclassification(prob, uncertainties, y_true, test_mask):
     pred_matches_label_bool = np.equal(prob[node_indices].argmax(axis=-1),
                                        y_true[node_indices].argmax(axis=-1))
     for unc in uncertainties:
-        uncertainties[unc]["auroc"] = roc_auc_score(~pred_matches_label_bool,
-                                                    uncertainties[unc]["values"][node_indices])
+        try:
+            uncertainties[unc]["auroc"] = roc_auc_score(~pred_matches_label_bool,
+                                                        uncertainties[unc]["values"][node_indices])
+        except ValueError:
+            uncertainties[unc]["auroc"] = 0.
         uncertainties[unc]["aupr"] = average_precision_score(~pred_matches_label_bool,
                                                              uncertainties[unc]["values"][
                                                                  node_indices])
