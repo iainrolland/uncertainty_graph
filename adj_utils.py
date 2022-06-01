@@ -85,7 +85,7 @@ def alpha_prior(adjacency, y_true, training_mask, num_steps=50, w_scale=1):
     prior += prior_update
     for n_step in range(num_steps):
         new_state = adjacency.dot(state)
-        prior_update = new_state * gauss(n_step + 1, sigma=scale)
+        prior_update = new_state * gauss(n_step + 1, sigma=w_scale)
         update_l2 = np.mean(np.power(prior_update[prior_update != 0], 2))
         prior += prior_update
         state = new_state
@@ -165,7 +165,7 @@ def meshgrid(segments, spixel_adj):
     print(time() - one)
 
 
-if __name__ == '__main__':
+def houston():
     seed = 1
     utils.set_seeds(seed)
     ood_classes = [[4, 2], [16, 13], [1, 10], [8, 12], [2, 13], [16, 11], [5, 4], [9, 13], [13, 1], [7, 12]]
@@ -191,3 +191,24 @@ if __name__ == '__main__':
     # unc = uu.get_subjective_uncertainties(prior)
     # foo = uu.misclassification(uu.alpha_to_prob(prior), unc, data[0].y, data.mask_te)
     # print(foo)
+
+
+def beirut():
+    seeds = np.arange(10)
+    for seed in seeds:
+        utils.set_seeds(seed)
+        data = get_dataset("BeirutDataset")()
+        all_classes_mask_tr = data.mask_tr.copy()
+        app = "experiments/Beirut/misclassification_tests/alpha_prior_seed_%s.npy" % seed
+
+        sigma = 1
+        masked_y = 0 * data[0].y
+        masked_y[data.mask_tr] = data[0].y[data.mask_tr]
+        prior = np.dot(np.exp((-shortest_path(data[0].a) ** 2) / (2 * sigma ** 2)) / sigma / (2 * np.pi) ** 0.5, masked_y) + 1
+        np.save(app, prior)
+        print("seed_%s: " % seed, np.unique(prior.argmax(axis=1), return_counts=True))
+
+
+if __name__ == '__main__':
+    # houston()
+    beirut()
