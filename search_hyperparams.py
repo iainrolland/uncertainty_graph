@@ -34,9 +34,7 @@ def launch_training_job(parent_dir, job_name, params):
     check_call(cmd, shell=True)
 
 
-if __name__ == "__main__":
-    args = parser.parse_args()
-
+def houston_ood():
     # Perform hypersearch over parameters
     seed = 1
     ood_classes = [[4, 2], [16, 13], [1, 10], [8, 12], [2, 13], [16, 11], [5, 4], [9, 13], [13, 1], [7, 12]]
@@ -57,3 +55,17 @@ if __name__ == "__main__":
 
         # Launch job (name has to be unique)
         launch_training_job(args.parent_dir, job_name, params)
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+
+    json_path = sorted(glob("experiments/Beirut/misclassification_tests/*/"))
+
+    for jp in json_path:
+        assert os.path.isfile(jp + "params.json"), "No json configuration file found at {}".format(json_path)
+
+        if not os.path.isfile(jp + "prob.npy"):
+            # Launch training with this config
+            cmd = "{python} training.py --model_dir {model_dir}".format(python=PYTHON, model_dir=jp)
+            print(cmd)
+            check_call(cmd, shell=True)
