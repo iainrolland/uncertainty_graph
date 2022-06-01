@@ -1,0 +1,12 @@
+{
+  "model": "Drop-GCN",
+  "gpu_list": [],
+  "seed": 0,
+  "channels": 16,
+  "data": "BeirutDataset",
+  "ood_classes": [],
+  "learning_rate": 1e-2,
+  "l2_loss_coefficient": 5e-4,
+  "epochs": 400,
+  "patience": 45
+}

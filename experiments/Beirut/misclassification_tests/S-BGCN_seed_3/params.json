@@ -1,0 +1,1 @@
+{"model": "S-BGCN", "gpu_list": [], "seed": 3, "channels": 16, "data": "BeirutDataset", "ood_classes": [], "learning_rate": 0.005, "l2_loss_coefficient": 0.001, "epochs": 600, "patience": 60}

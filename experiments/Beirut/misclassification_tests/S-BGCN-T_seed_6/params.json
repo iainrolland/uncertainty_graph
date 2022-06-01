@@ -1,0 +1,1 @@
+{"model": "S-BGCN-T", "gpu_list": [], "seed": 6, "channels": 16, "data": "BeirutDataset", "ood_classes": [], "learning_rate": 0.005, "teacher_file_path": "experiments/Beirut/misclassification_tests/GCN_seed_6/prob.npy", "teacher_coefficient": 1, "l2_loss_coefficient": 0.001, "epochs": 600, "patience": 60}
