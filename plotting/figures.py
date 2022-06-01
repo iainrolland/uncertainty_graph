@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as tri
 import numpy as np
 
-import rs.ground_truth
+# import rs.ground_truth
 import uncertainty_utils
 from .simplex_plots import *
 from .utils import *
-from rs import rgb, hyperspectral, lidar
+# from rs import rgb, hyperspectral, lidar
 from uncertainty_utils import vacuity_uncertainty, dissonance_uncertainty
-from datasets import HoustonDatasetMini
+# from datasets import HoustonDatasetMini
 
 set_rcParams()
 
@@ -60,11 +60,12 @@ def draw_dirichlet(alpha_list):
         draw_pdf_contours(dist, ax)
         title = r'$\boldsymbol{\alpha}$ = [%.3f, %.3f, %.3f]$^T$' % tuple(alpha)
         uncertainties = uncertainty_utils.get_subjective_uncertainties(np.array(alpha).reshape(1, -1))
-        caption = (r'$u_v$ = %.3f, $u_{diss}$ = %.3f,' + '\n' + r'$u_{entropy}$ = %.3f') % (*uncertainties.values(),)
+        # caption = (r'$u_v$ = %.3f, $u_{diss}$ = %.3f,' + '\n' + r'$u_{entropy}$ = %.3f') % (*uncertainties.values(),)
+        caption = (r'vacuity = %.3f' + '\n' + 'dissonance = %.3f' + '\n' + r'entropy = %.3f') % (*uncertainties.values(),)
         ax.set_title(title, fontdict={'fontsize': 8})
         ax.set_xlabel(caption, fontdict={'fontsize': 8})
         # plt.subplot(2, len(alpha_list), i + 1 + len(alpha_list))
-    plt.savefig("docs/19_oct/dirichlet_figs.pdf", bbox_inches="tight")
+    plt.savefig("figures/dirichlet_figs.pdf", bbox_inches="tight")
 
 
 def data_figure_rgb():
