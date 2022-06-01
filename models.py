@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy as np
 from spektral.transforms import LayerPreprocess, AdjToSpTensor
 from spektral.layers import GCNConv
-from spektral.models import GCN
+from spektral.models.gcn import GCN
 from spektral.data import SingleLoader
 import os
 
@@ -26,11 +26,11 @@ class Model(ABC):
 
 
 class GraphModel(Model, ABC):
-    transforms = [LayerPreprocess(GCNConv), AdjToSpTensor()]
+    # transforms = [LayerPreprocess(GCNConv), AdjToSpTensor()]
+    transforms = [LayerPreprocess(GCNConv)]  # try without sparse tensor (tf object)
 
     def get_network(self, params, n_inputs, n_outputs):
-        return GCN(n_labels=n_outputs, channels=params.channels, n_input_channels=n_inputs,
-                   output_activation=self.output_activation, l2_reg=params.l2_loss_coefficient)
+        return GCN(n_labels=n_outputs, channels=params.channels, output_activation=self.output_activation, l2_reg=params.l2_loss_coefficient)
 
     def fit_network(self, params, dataset):
         # weights_va, weights_te = (
