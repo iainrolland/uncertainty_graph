@@ -20,7 +20,8 @@ def train(model, dataset, params):
     # Train model
     history = model.fit_network(params, dataset)
 
-    np.save(os.path.join(params.directory, "history"), history.history["val_loss"])
+    np.save(os.path.join(params.directory, "val_loss_history"), history.history["val_loss"])
+    np.save(os.path.join(params.directory, "val_acc_history"), history.history["val_acc"])
     return neural_net
 
 
@@ -40,9 +41,10 @@ if __name__ == "__main__":
     parameters = Params(json_path)
     parameters.directory = args.model_dir
 
-    # # Check that we are not overwriting some previous experiment
-    # if len(glob(os.path.join(args.model_dir, "*.h5"))) > 0:
-    #     raise utils.log_error(AssertionError, "Weights found in model_dir, aborting to avoid overwrite")
+    # Check that we are not overwriting some previous experiment
+    if len(glob(os.path.join(args.model_dir, "*.h5"))) > 0:
+        # raise utils.log_error(AssertionError, "Weights found in model_dir, aborting to avoid overwrite")
+        raise AssertionError("Weights found in model_dir, aborting to avoid overwrite")
 
     # Set to use the specified GPUs
     utils.gpu_initialise(parameters.gpu_list)
@@ -57,7 +59,16 @@ if __name__ == "__main__":
 
     # Load dataset
     try:
-        data = datasets.get_dataset(parameters.data)(transforms=model_type.transforms)
+        if parameters.data == "AirQuality":
+            data = datasets.get_dataset(parameters.data)(parameters.region,
+                                                         parameters.datatype,
+                                                         parameters.numb_op_classes,
+                                                         parameters.seed,
+                                                         parameters.train_ratio,
+                                                         parameters.val_ratio,
+                                                         transforms=model_type.transforms)
+        else:
+            data = datasets.get_dataset(parameters.data)(transforms=model_type.transforms)
     except ValueError as err:
         raise utils.log_error(ValueError, err)
 
