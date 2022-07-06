@@ -49,7 +49,11 @@ def evaluate(network, dataset, params, test_misc_detection=True, test_ood_detect
         raise log_error(ValueError,
                         "model was {} but must be one of {}.".format(params.model, "/".join(supported_models)))
 
-    np.save(os.path.join(params.directory, "alpha.npy"), np.array(network(inputs)))
+    if params.model == "S-BMLP":
+        # don't pass in the adjacency matrix to MLP
+        np.save(os.path.join(params.directory, "alpha.npy"), np.array(network(inputs[0])))
+    else:
+        np.save(os.path.join(params.directory, "alpha.npy"), np.array(network(inputs)))
     np.save(os.path.join(params.directory, "prob.npy"), prob)
 
     if test_misc_detection:
