@@ -7,8 +7,9 @@ import numpy as np
 from scipy import sparse as sp
 from utils import set_logger
 import logging
+from glob import glob
 from time import time
-import itertools
+import os
 from scipy.sparse.csgraph import shortest_path
 from scipy.sparse import lil_matrix, csr_matrix
 from tqdm import tqdm
@@ -16,6 +17,7 @@ import matplotlib.pyplot as plt
 
 from utils import set_seeds
 from plotting.utils import classes_array_to_colormapped_array
+from params import Params
 
 
 def degree_power(A, k):
@@ -193,22 +195,42 @@ def houston():
     # print(foo)
 
 
-def beirut():
-    seeds = np.arange(10)
-    for seed in seeds:
-        utils.set_seeds(seed)
-        data = get_dataset("BeirutDataset")()
+def make_alpha_priors(parent_dir, exact=True):
+    # any experiment with a K in its name uses an alpha prior, get each of these and make a prior for each
+    # (seeds, and therefore priors, usually differ)
+    folders = [f for f in glob(os.path.join(parent_dir, "*")) if "K" in f]
+
+    for f in tqdm(folders):
+        parameters = Params(os.path.join(f, "params.json"))
+        utils.set_seeds(parameters.seed)
+
+        # load dataset
+        if parameters.data == "AirQuality":
+            data = get_dataset(parameters.data)(parameters.region,
+                                                parameters.datatype,
+                                                parameters.numb_op_classes,
+                                                parameters.seed,
+                                                parameters.train_ratio,
+                                                parameters.val_ratio)
+        else:
+            data = get_dataset(parameters.data)()
+
         all_classes_mask_tr = data.mask_tr.copy()
-        app = "experiments/Beirut/misclassification_tests/alpha_prior_seed_%s.npy" % seed
+        alpha_prior_path = os.path.join(parent_dir, "alpha_prior_seed_%s.npy" % parameters.seed)
 
         sigma = 1
         masked_y = 0 * data[0].y
         masked_y[data.mask_tr] = data[0].y[data.mask_tr]
-        prior = np.dot(np.exp((-shortest_path(data[0].a) ** 2) / (2 * sigma ** 2)) / sigma / (2 * np.pi) ** 0.5, masked_y) + 1
-        np.save(app, prior)
-        print("seed_%s: " % seed, np.unique(prior.argmax(axis=1), return_counts=True))
+        if exact:
+            prior = np.dot(np.exp((-shortest_path(data[0].a) ** 2) / (2 * sigma ** 2)) / sigma / (2 * np.pi) ** 0.5,
+                           masked_y) + 1
+        else:
+            prior = alpha_prior(data[0].a, data[0].y, data.mask_tr)
+
+        np.save(alpha_prior_path, prior)
+        print("seed_%s: " % parameters.seed, np.unique(prior.argmax(axis=1), return_counts=True))
 
 
 if __name__ == '__main__':
     # houston()
-    beirut()
+    make_alpha_priors("experiments/AirQuality/Italy/PM25/misclassification_tests", False)
